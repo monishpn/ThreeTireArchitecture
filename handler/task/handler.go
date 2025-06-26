@@ -81,6 +81,7 @@ func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	index, err := strconv.Atoi(r.PathValue("id"))
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("%s", err.Error())
