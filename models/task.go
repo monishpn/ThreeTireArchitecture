@@ -1,8 +1,13 @@
 package models
 
-type Task struct {
+type Tasks struct {
+	Tid       int
+	Task      string
+	Completed bool
+	//userID    int
 }
 
-func (t Task) Validate() error {
-
+type Users struct {
+	userID int
+	name   string
 }
