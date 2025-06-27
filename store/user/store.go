@@ -6,13 +6,6 @@ import (
 	"log"
 )
 
-type UserStore interface {
-	AddUser(name string) error
-	GetUserByID(id int) (models.User, error)
-	ViewUser() ([]models.User, error)
-	CheckUserID(id int) bool
-	CheckIfRowsExists() bool
-}
 type Store struct {
 	db *sql.DB
 }

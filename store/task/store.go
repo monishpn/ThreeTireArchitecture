@@ -6,15 +6,6 @@ import (
 	"log"
 )
 
-type TaskStore interface {
-	AddTask(task string, uid int) error
-	ViewTask() ([]Models.Tasks, error)
-	GetByID(id int) (Models.Tasks, error)
-	UpdateTask(id int) (bool, error)
-	DeleteTask(id int) (bool, error)
-	CheckIfExists(i int) bool
-}
-
 type Store struct {
 	db *sql.DB
 }

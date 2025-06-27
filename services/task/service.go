@@ -2,26 +2,29 @@ package task
 
 import (
 	Model "awesomeProject/models"
-	UserService "awesomeProject/services/user"
-	Store "awesomeProject/store/task"
 	"errors"
 	"log"
 )
 
-type TaskService interface {
+type TaskStore interface {
 	AddTask(task string, uid int) error
 	ViewTask() ([]Model.Tasks, error)
 	GetByID(id int) (Model.Tasks, error)
 	UpdateTask(id int) (bool, error)
 	DeleteTask(id int) (bool, error)
+	CheckIfExists(i int) bool
+}
+
+type UserService interface {
+	CheckUserID(id int) bool
 }
 
 type Service struct {
-	store       Store.TaskStore
-	userService *UserService.Service
+	store       TaskStore
+	userService UserService
 }
 
-func New(store Store.TaskStore, userService *UserService.Service) *Service {
+func New(store TaskStore, userService UserService) *Service {
 	return &Service{
 		store:       store,
 		userService: userService,

@@ -2,23 +2,23 @@ package user
 
 import (
 	Model "awesomeProject/models"
-	"awesomeProject/store/user"
 	"errors"
 	"log"
 )
 
-type UserService interface {
+type UserStore interface {
 	AddUser(name string) error
-	ViewTask() ([]Model.User, error)
-	GetUserId(id int) (Model.User, error)
+	GetUserByID(id int) (Model.User, error)
+	ViewUser() ([]Model.User, error)
 	CheckUserID(id int) bool
+	CheckIfRowsExists() bool
 }
 
 type Service struct {
-	store user.UserStore
+	store UserStore
 }
 
-func New(store user.UserStore) *Service {
+func New(store UserStore) *Service {
 	return &Service{
 		store: store,
 	}

@@ -2,7 +2,6 @@ package task
 
 import (
 	Models "awesomeProject/models"
-	Services "awesomeProject/services/task"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,12 +10,20 @@ import (
 	"strconv"
 )
 
+type TaskService interface {
+	AddTask(task string, uid int) error
+	ViewTask() ([]Models.Tasks, error)
+	GetByID(id int) (Models.Tasks, error)
+	UpdateTask(id int) (bool, error)
+	DeleteTask(id int) (bool, error)
+}
+
 type Handler struct {
-	service Services.TaskService
+	service TaskService
 }
 
 // New creates a new task handler
-func New(service Services.TaskService) *Handler {
+func New(service TaskService) *Handler {
 	return &Handler{service: service}
 }
 

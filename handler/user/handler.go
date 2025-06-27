@@ -1,7 +1,7 @@
 package user
 
 import (
-	"awesomeProject/services/user"
+	Model "awesomeProject/models"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,11 +10,18 @@ import (
 	"strconv"
 )
 
-type handler struct {
-	service user.UserService
+type UserService interface {
+	AddUser(name string) error
+	ViewTask() ([]Model.User, error)
+	GetUserId(id int) (Model.User, error)
+	CheckUserID(id int) bool
 }
 
-func New(service user.UserService) *handler {
+type handler struct {
+	service UserService
+}
+
+func New(service UserService) *handler {
 	return &handler{service}
 }
 
