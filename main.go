@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	db, err := datasource.New("root:root123@tcp(localhost:3306)/test_db")
+	db, err := datasource.New("root:root123@tcp(localhost:3306)/testDB")
 	if err != nil {
 		log.Println(err)
 		return
