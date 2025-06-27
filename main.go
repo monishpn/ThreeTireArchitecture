@@ -22,8 +22,12 @@ func main() {
 		return
 	}
 
+	userStore := Ustore.New(db)
+	userSvc := Uservice.New(userStore)
+	userHandler := Uhandler.New(userSvc)
+
 	taskStore := Tstore.New(db)
-	taskSvc := Tservice.New(taskStore)
+	taskSvc := Tservice.New(taskStore, userSvc)
 	taskHandler := Thandler.New(taskSvc)
 
 	http.HandleFunc("GET /task", taskHandler.Viewtask)
@@ -31,10 +35,6 @@ func main() {
 	http.HandleFunc("POST /task", taskHandler.Addtask)
 	http.HandleFunc("PUT /task/{id}", taskHandler.Updatetask)
 	http.HandleFunc("DELETE /task/{id}", taskHandler.Deletetask)
-
-	userStore := Ustore.New(db)
-	userSvc := Uservice.New(userStore)
-	userHandler := Uhandler.New(userSvc)
 
 	http.HandleFunc("GET /user", userHandler.Viewuser)
 	http.HandleFunc("GET /user/{id}", userHandler.GetUserByID)

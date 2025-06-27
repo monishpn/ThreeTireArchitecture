@@ -73,7 +73,7 @@ func (h *Handler) Viewtask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, v := range ans {
-		fmt.Fprintf(w, "ID: %d, Task: %s, Completed: %t\n", v.Tid, v.Task, v.Completed)
+		fmt.Fprintf(w, "ID: %d, Task: %s, Completed: %t, UserID: %v\n", v.Tid, v.Task, v.Completed, v.UserID)
 	}
 }
 

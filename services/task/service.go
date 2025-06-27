@@ -9,18 +9,23 @@ import (
 )
 
 type Service struct {
-	store *Store.Store
+	store       *Store.Store
+	userService *UserService.Service
 }
 
-func New(store *Store.Store) *Service {
-	return &Service{store: store}
+func New(store *Store.Store, userService *UserService.Service) *Service {
+	return &Service{
+		store:       store,
+		userService: userService,
+	}
 }
 
 func (s *Service) AddTask(task string, uid int) error {
 	if task == "" {
 		return errors.New("task is Empty")
 	}
-	connect := UserService.ServiceInterface().CheckUserID(uid)
+
+	check := s.userService.CheckUserID(uid)
 
 	if check == true {
 		return s.store.AddTask(task, uid)

@@ -17,7 +17,7 @@ func New(db *sql.DB) *Store {
 
 func (s *Store) AddTask(task string, uid int) error {
 
-	_, err := s.db.Exec("Insert into TASKS (task,completed,uid) values (?,?)", task, false, uid)
+	_, err := s.db.Exec("Insert into TASKS (task,completed,uid) values (?,?,?)", task, false, uid)
 	if err != nil {
 		log.Printf("Error in STORE.AddTask: %v", err)
 		return err

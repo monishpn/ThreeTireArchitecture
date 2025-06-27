@@ -19,7 +19,9 @@ type Service struct {
 }
 
 func New(store *user.Store) *Service {
-	return &Service{store: store}
+	return &Service{
+		store: store,
+	}
 }
 
 func (s *Service) AddUser(name string) error {

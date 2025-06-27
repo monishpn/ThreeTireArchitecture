@@ -59,11 +59,9 @@ func (s *Store) ViewUser() ([]models.User, error) {
 
 func (s *Store) CheckUserID(id int) bool {
 	var uid int
-	err := s.db.QueryRow("select uid form USERS where uid=?", id).Scan(&uid)
+	err := s.db.QueryRow("select * form USERS where uid=?", id).Scan(&uid)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
+		return false
 
 	}
 	return true
