@@ -8,12 +8,20 @@ import (
 	"log"
 )
 
+type TaskService interface {
+	AddTask(task string, uid int) error
+	ViewTask() ([]Model.Tasks, error)
+	GetByID(id int) (Model.Tasks, error)
+	UpdateTask(id int) (bool, error)
+	DeleteTask(id int) (bool, error)
+}
+
 type Service struct {
-	store       *Store.Store
+	store       Store.TaskStore
 	userService *UserService.Service
 }
 
-func New(store *Store.Store, userService *UserService.Service) *Service {
+func New(store Store.TaskStore, userService *UserService.Service) *Service {
 	return &Service{
 		store:       store,
 		userService: userService,

@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-type ServiceInterface interface {
+type UserService interface {
 	AddUser(name string) error
 	ViewTask() ([]Model.User, error)
 	GetUserId(id int) (Model.User, error)
@@ -15,10 +15,10 @@ type ServiceInterface interface {
 }
 
 type Service struct {
-	store *user.Store
+	store user.UserStore
 }
 
-func New(store *user.Store) *Service {
+func New(store user.UserStore) *Service {
 	return &Service{
 		store: store,
 	}

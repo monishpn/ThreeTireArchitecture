@@ -6,6 +6,13 @@ import (
 	"log"
 )
 
+type UserStore interface {
+	AddUser(name string) error
+	GetUserByID(id int) (models.User, error)
+	ViewUser() ([]models.User, error)
+	CheckUserID(id int) bool
+	CheckIfRowsExists() bool
+}
 type Store struct {
 	db *sql.DB
 }
@@ -59,8 +66,12 @@ func (s *Store) ViewUser() ([]models.User, error) {
 
 func (s *Store) CheckUserID(id int) bool {
 	var uid int
-	err := s.db.QueryRow("select * form USERS where uid=?", id).Scan(&uid)
+	err := s.db.QueryRow("select uid from USERS where uid=?", id).Scan(&uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		log.Printf("DB Error: %v", err)
 		return false
 
 	}

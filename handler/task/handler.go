@@ -11,17 +11,12 @@ import (
 	"strconv"
 )
 
-//type Services interface {
-//	Create(task models.Task) (models.Task, error)
-//	GetByID(id int) (models.Task, error)
-//}
-
 type Handler struct {
-	service *Services.Service
+	service Services.TaskService
 }
 
 // New creates a new task handler
-func New(service *Services.Service) *Handler {
+func New(service Services.TaskService) *Handler {
 	return &Handler{service: service}
 }
 
@@ -55,8 +50,7 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 	err = h.service.AddTask(reqBody.T, reqBody.U)
 
 	if err != nil {
-		log.Printf("Error in HANDLER.AddTask: %v", err)
-		log.Printf("%s", err.Error())
+		fmt.Fprintf(w, "Error in HANDLER.AddTask: %v", err)
 		return
 	}
 
