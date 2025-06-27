@@ -4,5 +4,5 @@ type Tasks struct {
 	Tid       int
 	Task      string
 	Completed bool
-	//userID    int
+	UserID    int
 }

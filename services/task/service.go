@@ -2,6 +2,7 @@ package task
 
 import (
 	Model "awesomeProject/models"
+	UserService "awesomeProject/services/user"
 	Store "awesomeProject/store/task"
 	"errors"
 	"log"
@@ -15,19 +16,24 @@ func New(store *Store.Store) *Service {
 	return &Service{store: store}
 }
 
-func (s *Service) Add_Task(task string) (bool, error) {
+func (s *Service) AddTask(task string, uid int) error {
 	if task == "" {
-		return false, errors.New("Task is Empty")
+		return errors.New("task is Empty")
 	}
-	return s.store.AddTask(task)
+	connect := UserService.ServiceInterface().CheckUserID(uid)
+
+	if check == true {
+		return s.store.AddTask(task, uid)
+	}
+	return errors.New("no User found")
 }
 
-func (s *Service) View_Task() ([]Model.Tasks, error) {
+func (s *Service) ViewTask() ([]Model.Tasks, error) {
 
 	return s.store.ViewTask()
 }
 
-func (s *Service) Get_By_ID(i int) (Model.Tasks, error) {
+func (s *Service) GetByID(i int) (Model.Tasks, error) {
 
 	if s.store.CheckIfExists(i) {
 		ans, err := s.store.GetByID(i)
@@ -40,7 +46,7 @@ func (s *Service) Get_By_ID(i int) (Model.Tasks, error) {
 	return Model.Tasks{}, errors.New("ID not found")
 }
 
-func (s *Service) Update_Task(i int) (bool, error) {
+func (s *Service) UpdateTask(i int) (bool, error) {
 	if s.store.CheckIfExists(i) {
 		ans, err := s.store.UpdateTask(i)
 		if err != nil {
@@ -52,7 +58,7 @@ func (s *Service) Update_Task(i int) (bool, error) {
 	return false, errors.New("ID not found")
 }
 
-func (s *Service) Delete_Task(i int) (bool, error) {
+func (s *Service) DeleteTask(i int) (bool, error) {
 	if s.store.CheckIfExists(i) {
 		ans, err := s.store.DeleteTask(i)
 		if err != nil {

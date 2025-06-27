@@ -15,14 +15,14 @@ func New(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) AddTask(task string) (bool, error) {
+func (s *Store) AddTask(task string, uid int) error {
 
-	_, err := s.db.Exec("Insert into TASKS (task,completed) values (?,?)", task, false)
+	_, err := s.db.Exec("Insert into TASKS (task,completed,uid) values (?,?)", task, false, uid)
 	if err != nil {
 		log.Printf("Error in STORE.AddTask: %v", err)
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 func (s *Store) ViewTask() ([]Models.Tasks, error) {
@@ -30,6 +30,7 @@ func (s *Store) ViewTask() ([]Models.Tasks, error) {
 	var tID int
 	var task string
 	var completed bool
+	var uid int
 
 	var answers []Models.Tasks
 
@@ -41,12 +42,12 @@ func (s *Store) ViewTask() ([]Models.Tasks, error) {
 
 	defer row.Close()
 	for row.Next() {
-		err := row.Scan(&tID, &task, &completed)
+		err := row.Scan(&tID, &task, &completed, &uid)
 		if err != nil {
 			log.Printf("Error in STORE.View: %v", err)
 			return []Models.Tasks{}, err
 		}
-		answers = append(answers, Models.Tasks{tID, task, completed})
+		answers = append(answers, Models.Tasks{tID, task, completed, uid})
 
 	}
 	return answers, nil
@@ -57,13 +58,14 @@ func (s *Store) GetByID(id int) (Models.Tasks, error) {
 	var tID int
 	var task string
 	var completed bool
+	var uid int
 
-	err := s.db.QueryRow("select * from TASKS where id=?", id).Scan(&tID, &task, &completed)
+	err := s.db.QueryRow("select * from TASKS where id=?", id).Scan(&tID, &task, &completed, &uid)
 	if err != nil {
 		log.Printf("Error in STORE.GetByID: %v", err)
 		return Models.Tasks{}, err
 	}
-	return Models.Tasks{tID, task, completed}, nil
+	return Models.Tasks{tID, task, completed, uid}, nil
 }
 
 func (s *Store) UpdateTask(id int) (bool, error) {

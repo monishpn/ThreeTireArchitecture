@@ -37,7 +37,7 @@ func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.Add_User(input.T)
+	err = h.service.AddUser(input.T)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Error Adding User: %s\n", err)
@@ -57,7 +57,7 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ans, err := h.service.Get_User_ID(index)
+	ans, err := h.service.GetUserId(index)
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -72,7 +72,7 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) Viewuser(w http.ResponseWriter, r *http.Request) {
 
-	ans, err := h.service.View_Task()
+	ans, err := h.service.ViewTask()
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		log.Printf("USER_HANDLER:VIEW : %v", err)

@@ -4,7 +4,15 @@ import (
 	Model "awesomeProject/models"
 	"awesomeProject/store/user"
 	"errors"
+	"log"
 )
+
+type ServiceInterface interface {
+	AddUser(name string) error
+	ViewTask() ([]Model.User, error)
+	GetUserId(id int) (Model.User, error)
+	CheckUserID(id int) bool
+}
 
 type Service struct {
 	store *user.Store
@@ -14,14 +22,14 @@ func New(store *user.Store) *Service {
 	return &Service{store: store}
 }
 
-func (s *Service) Add_User(name string) error {
+func (s *Service) AddUser(name string) error {
 	if name == "" {
 		return errors.New("Name is Empty")
 	}
 	return s.store.AddUser(name)
 }
 
-func (s *Service) View_Task() ([]Model.User, error) {
+func (s *Service) ViewTask() ([]Model.User, error) {
 	if s.store.CheckIfRowsExists() {
 		return s.store.ViewUser()
 	}
@@ -30,9 +38,18 @@ func (s *Service) View_Task() ([]Model.User, error) {
 
 }
 
-func (s *Service) Get_User_ID(id int) (Model.User, error) {
-	if s.store.CheckUserID(id) {
+func (s Service) GetUserId(id int) (Model.User, error) {
+	if s.CheckUserID(id) {
 		return s.store.GetUserByID(id)
 	}
 	return Model.User{}, errors.New("User not found")
+}
+
+func (s Service) CheckUserID(id int) bool {
+
+	if s.store == nil {
+		log.Printf("ERROR, *Store is a nil\n\n")
+		return false
+	}
+	return s.store.CheckUserID(id)
 }

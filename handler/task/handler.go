@@ -40,6 +40,7 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 
 	var reqBody struct {
 		T string `json:"task"`
+		U int    `json:"userID"`
 	}
 
 	err = json.Unmarshal(msg, &reqBody)
@@ -51,7 +52,7 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ans, err := h.service.Add_Task(reqBody.T)
+	err = h.service.AddTask(reqBody.T, reqBody.U)
 
 	if err != nil {
 		log.Printf("Error in HANDLER.AddTask: %v", err)
@@ -59,15 +60,14 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ans {
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("Task added"))
-		return
-	}
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Task added"))
+	return
+
 }
 
 func (h *Handler) Viewtask(w http.ResponseWriter, r *http.Request) {
-	ans, err := h.service.View_Task()
+	ans, err := h.service.ViewTask()
 	if err != nil {
 		log.Printf("Error in HANDLER.Viewtask: %v", err)
 		return
@@ -92,7 +92,7 @@ func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
 
 	var ans Models.Tasks
 
-	ans, err = h.service.Get_By_ID(index)
+	ans, err = h.service.GetByID(index)
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return
@@ -115,7 +115,7 @@ func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var ans bool
-	ans, err = h.service.Update_Task(index)
+	ans, err = h.service.UpdateTask(index)
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return
@@ -139,7 +139,7 @@ func (h *Handler) Deletetask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var ans bool
-	ans, err = h.service.Delete_Task(index)
+	ans, err = h.service.DeleteTask(index)
 	if err != nil {
 		log.Printf("%s", err.Error())
 		return
