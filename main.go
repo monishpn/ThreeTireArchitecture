@@ -6,9 +6,13 @@ import (
 	"time"
 
 	"awesomeProject/datasource"
-	handler "awesomeProject/handler/task"
-	service "awesomeProject/services/task"
-	store "awesomeProject/store/task"
+	Thandler "awesomeProject/handler/task"
+	Tservice "awesomeProject/services/task"
+	Tstore "awesomeProject/store/task"
+
+	Uhandler "awesomeProject/handler/user"
+	Uservice "awesomeProject/services/user"
+	Ustore "awesomeProject/store/user"
 )
 
 func main() {
@@ -18,15 +22,23 @@ func main() {
 		return
 	}
 
-	taskStore := store.New(db)
-	taskSvc := service.New(taskStore)
-	taskHandler := handler.New(taskSvc)
+	taskStore := Tstore.New(db)
+	taskSvc := Tservice.New(taskStore)
+	taskHandler := Thandler.New(taskSvc)
 
 	http.HandleFunc("GET /task", taskHandler.Viewtask)
 	http.HandleFunc("GET /task/{id}", taskHandler.Gettask)
 	http.HandleFunc("POST /task", taskHandler.Addtask)
 	http.HandleFunc("PUT /task/{id}", taskHandler.Updatetask)
 	http.HandleFunc("DELETE /task/{id}", taskHandler.Deletetask)
+
+	userStore := Ustore.New(db)
+	userSvc := Uservice.New(userStore)
+	userHandler := Uhandler.New(userSvc)
+
+	http.HandleFunc("GET /user", userHandler.Viewuser)
+	http.HandleFunc("GET /user/{id}", userHandler.GetUserByID)
+	http.HandleFunc("POST /user", userHandler.AddUser)
 
 	server := &http.Server{
 		Addr:         ":8080",
