@@ -3,7 +3,6 @@ package user
 import (
 	Model "awesomeProject/models"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 
 type UserService interface {
 	AddUser(name string) error
-	ViewTask() ([]Model.User, error)
+	ViewTask() (Model.UserSlice, error)
 	GetUserId(id int) (Model.User, error)
 	CheckUserID(id int) bool
 }
@@ -30,7 +29,9 @@ func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
 
 	msg, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Fprintf(w, "Error Reading Body: %s\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		log.Printf("Error Reading Body: %s\n", err)
 		return
 	}
 
@@ -40,18 +41,21 @@ func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(msg, &input)
 	if err != nil {
-		fmt.Fprintf(w, "Error Parsing Body: %s\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		log.Printf("Error Parsing Body: %s\n", err)
 		return
 	}
 
 	err = h.service.AddUser(input.T)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error Adding User: %s\n", err)
+		cErr, _ := err.(Model.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "User %s added.\n", input.T)
+	w.Write([]byte("User Created"))
 }
 
 func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -59,21 +63,22 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	index, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "Error in USER_HANDLER: GetUserByID : %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	ans, err := h.service.GetUserId(index)
 
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "Error in USER_HANDLER: GetUserByID : %v", err)
+		cErr, _ := err.(Model.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "ID : %v,  Name: %v", ans.UserID, ans.Name)
+	w.Write([]byte(ans.String()))
 
 }
 
@@ -81,13 +86,22 @@ func (h *handler) Viewuser(w http.ResponseWriter, r *http.Request) {
 
 	ans, err := h.service.ViewTask()
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		log.Printf("USER_HANDLER:VIEW : %v", err)
+		cErr, ok := err.(Model.CustomError)
+		if ok {
+			w.WriteHeader(cErr.Code)
+			w.Write([]byte(cErr.Message))
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`Something went wrong!`))
 		return
-	}
-	w.WriteHeader(http.StatusOK)
-	for _, v := range ans {
-		fmt.Fprintf(w, "ID : %v,  Name: %v\n", v.UserID, v.Name)
+		
 	}
 
+	b, _ := json.Marshal(ans)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
 }

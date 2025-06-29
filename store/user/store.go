@@ -1,9 +1,10 @@
 package user
 
 import (
-	"awesomeProject/models"
+	Models "awesomeProject/models"
 	"database/sql"
 	"log"
+	"net/http"
 )
 
 type Store struct {
@@ -17,30 +18,33 @@ func New(db *sql.DB) *Store {
 func (s *Store) AddUser(name string) error {
 	_, err := s.db.Exec("insert into USERS (name) values (?)", name)
 	if err != nil {
-		return err
+		return Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
+
 	}
 	log.Printf("Added user %s", name)
 	return nil
 }
 
-func (s *Store) GetUserByID(id int) (models.User, error) {
+func (s *Store) GetUserByID(id int) (Models.User, error) {
 
 	var uid int
 	var name string
 
 	err := s.db.QueryRow("select * from USERS where uid=?", id).Scan(&uid, &name)
 	if err != nil {
-		return models.User{}, err
+		return Models.User{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
+
 	}
-	return models.User{uid, name}, nil
+	return Models.User{uid, name}, nil
 
 }
 
-func (s *Store) ViewUser() ([]models.User, error) {
-	var users []models.User
+func (s *Store) ViewUser() ([]Models.User, error) {
+	var users []Models.User
 	row, err := s.db.Query("Select * from USERS")
 	if err != nil {
-		return users, err
+		return users, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
+
 	}
 
 	defer row.Close()
@@ -50,10 +54,12 @@ func (s *Store) ViewUser() ([]models.User, error) {
 	for row.Next() {
 		err = row.Scan(&uid, &name)
 		if err != nil {
-			return []models.User{}, err
+			return []Models.User{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While reading the data in row "}
+
 		}
-		users = append(users, models.User{uid, name})
+		users = append(users, Models.User{uid, name})
 	}
+
 	return users, nil
 }
 

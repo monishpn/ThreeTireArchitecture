@@ -2,8 +2,7 @@ package task
 
 import (
 	Model "awesomeProject/models"
-	"errors"
-	"log"
+	"net/http"
 )
 
 type TaskStore interface {
@@ -33,7 +32,7 @@ func New(store TaskStore, userService UserService) *Service {
 
 func (s *Service) AddTask(task string, uid int) error {
 	if task == "" {
-		return errors.New("task is Empty")
+		return Model.CustomError{http.StatusBadRequest, "Task is Empty"}
 	}
 
 	check := s.userService.CheckUserID(uid)
@@ -41,7 +40,7 @@ func (s *Service) AddTask(task string, uid int) error {
 	if check == true {
 		return s.store.AddTask(task, uid)
 	}
-	return errors.New("no User found")
+	return Model.CustomError{http.StatusBadRequest, "No user found"}
 }
 
 func (s *Service) ViewTask() ([]Model.Tasks, error) {
@@ -52,36 +51,21 @@ func (s *Service) ViewTask() ([]Model.Tasks, error) {
 func (s *Service) GetByID(i int) (Model.Tasks, error) {
 
 	if s.store.CheckIfExists(i) {
-		ans, err := s.store.GetByID(i)
-		if err != nil {
-			log.Printf("Error in SERVICES.GetByID: %v", err)
-			return Model.Tasks{}, err
-		}
-		return ans, nil
+		return s.store.GetByID(i)
 	}
-	return Model.Tasks{}, errors.New("ID not found")
+	return Model.Tasks{}, Model.CustomError{http.StatusBadRequest, "No task found"}
 }
 
 func (s *Service) UpdateTask(i int) (bool, error) {
 	if s.store.CheckIfExists(i) {
-		ans, err := s.store.UpdateTask(i)
-		if err != nil {
-			log.Printf("Error in SERVICES.UpdateTask: %v", err)
-			return false, err
-		}
-		return ans, nil
+		return s.store.UpdateTask(i)
 	}
-	return false, errors.New("ID not found")
+	return false, Model.CustomError{http.StatusBadRequest, "No task found"}
 }
 
 func (s *Service) DeleteTask(i int) (bool, error) {
 	if s.store.CheckIfExists(i) {
-		ans, err := s.store.DeleteTask(i)
-		if err != nil {
-			log.Printf("Error in SERVICES.DeleteTask: %v", err)
-			return false, err
-		}
-		return ans, nil
+		return s.store.DeleteTask(i)
 	}
-	return false, errors.New("ID not found")
+	return false, Model.CustomError{http.StatusBadRequest, "No task found"}
 }

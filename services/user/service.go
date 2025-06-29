@@ -2,8 +2,7 @@ package user
 
 import (
 	Model "awesomeProject/models"
-	"errors"
-	"log"
+	"net/http"
 )
 
 type UserStore interface {
@@ -26,17 +25,17 @@ func New(store UserStore) *Service {
 
 func (s *Service) AddUser(name string) error {
 	if name == "" {
-		return errors.New("Name is Empty")
+		return Model.CustomError{http.StatusBadRequest, "Empty String given as input"}
 	}
 	return s.store.AddUser(name)
 }
 
-func (s *Service) ViewTask() ([]Model.User, error) {
+func (s *Service) ViewTask() (Model.UserSlice, error) {
 	if s.store.CheckIfRowsExists() {
 		return s.store.ViewUser()
 	}
 
-	return nil, errors.New("No USERS to display.")
+	return nil, Model.CustomError{http.StatusNoContent, "No user Found"}
 
 }
 
@@ -44,14 +43,11 @@ func (s Service) GetUserId(id int) (Model.User, error) {
 	if s.CheckUserID(id) {
 		return s.store.GetUserByID(id)
 	}
-	return Model.User{}, errors.New("User not found")
+
+	return Model.User{}, Model.CustomError{Code: http.StatusNotFound, Message: "user does not exists"}
 }
 
 func (s Service) CheckUserID(id int) bool {
 
-	if s.store == nil {
-		log.Printf("ERROR, *Store is a nil\n\n")
-		return false
-	}
 	return s.store.CheckUserID(id)
 }

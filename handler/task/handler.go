@@ -3,7 +3,6 @@ package task
 import (
 	Models "awesomeProject/models"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -57,7 +56,9 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 	err = h.service.AddTask(reqBody.T, reqBody.U)
 
 	if err != nil {
-		fmt.Fprintf(w, "Error in HANDLER.AddTask: %v", err)
+		cErr := err.(Models.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
 
@@ -70,12 +71,16 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Viewtask(w http.ResponseWriter, r *http.Request) {
 	ans, err := h.service.ViewTask()
 	if err != nil {
-		log.Printf("Error in HANDLER.Viewtask: %v", err)
+		cErr := err.(Models.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
-	for _, v := range ans {
-		fmt.Fprintf(w, "ID: %d, Task: %s, Completed: %t, UserID: %v\n", v.Tid, v.Task, v.Completed, v.UserID)
-	}
+	b, _ := json.Marshal(ans)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
 }
 
 func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
@@ -85,8 +90,8 @@ func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 
 		return
 	}
@@ -95,12 +100,14 @@ func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
 
 	ans, err = h.service.GetByID(index)
 	if err != nil {
-		log.Printf("%s", err.Error())
+		cErr := err.(Models.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "ID: %d, Task: %s, Completed: %t\n", ans.Tid, ans.Task, ans.Completed)
+	w.Write([]byte(ans.String()))
 }
 
 func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +125,9 @@ func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
 	var ans bool
 	ans, err = h.service.UpdateTask(index)
 	if err != nil {
-		log.Printf("%s", err.Error())
+		cErr := err.(Models.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
 	if ans {
@@ -142,7 +151,9 @@ func (h *Handler) Deletetask(w http.ResponseWriter, r *http.Request) {
 	var ans bool
 	ans, err = h.service.DeleteTask(index)
 	if err != nil {
-		log.Printf("%s", err.Error())
+		cErr := err.(Models.CustomError)
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
 		return
 	}
 	if ans {
