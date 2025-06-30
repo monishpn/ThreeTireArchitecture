@@ -1,0 +1,23 @@
+mode: set
+awesomeProject/store/user/store.go:14.29,16.2 1 1
+awesomeProject/store/user/store.go:18.44,20.16 2 1
+awesomeProject/store/user/store.go:20.16,24.3 2 0
+awesomeProject/store/user/store.go:25.2,26.12 2 1
+awesomeProject/store/user/store.go:29.58,35.16 4 1
+awesomeProject/store/user/store.go:35.16,39.3 2 0
+awesomeProject/store/user/store.go:40.2,40.36 1 1
+awesomeProject/store/user/store.go:44.51,47.16 3 1
+awesomeProject/store/user/store.go:47.16,50.3 1 0
+awesomeProject/store/user/store.go:52.2,56.17 4 1
+awesomeProject/store/user/store.go:56.17,58.17 2 1
+awesomeProject/store/user/store.go:58.17,61.4 1 0
+awesomeProject/store/user/store.go:62.3,62.48 1 1
+awesomeProject/store/user/store.go:65.2,65.19 1 1
+awesomeProject/store/user/store.go:68.42,71.16 3 1
+awesomeProject/store/user/store.go:71.16,72.27 1 1
+awesomeProject/store/user/store.go:72.27,74.4 1 0
+awesomeProject/store/user/store.go:75.3,76.15 2 1
+awesomeProject/store/user/store.go:79.2,79.13 1 0
+awesomeProject/store/user/store.go:82.42,85.13 3 1
+awesomeProject/store/user/store.go:85.13,87.3 1 1
+awesomeProject/store/user/store.go:88.2,88.14 1 0

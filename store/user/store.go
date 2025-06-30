@@ -18,6 +18,7 @@ func New(db *sql.DB) *Store {
 func (s *Store) AddUser(name string) error {
 	_, err := s.db.Exec("insert into USERS (name) values (?)", name)
 	if err != nil {
+		log.Println(err)
 		return Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
 
 	}
@@ -32,6 +33,7 @@ func (s *Store) GetUserByID(id int) (Models.User, error) {
 
 	err := s.db.QueryRow("select * from USERS where uid=?", id).Scan(&uid, &name)
 	if err != nil {
+		log.Println(err)
 		return Models.User{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
 
 	}
