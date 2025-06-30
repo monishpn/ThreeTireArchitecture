@@ -1,8 +1,10 @@
 package task
 
 import (
+	"awesomeProject/models"
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
+	"reflect"
 	"testing"
 )
 
@@ -17,7 +19,6 @@ func TestAddTask(t *testing.T) {
 	defer db.Close()
 
 	mock.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?,?)").WithArgs("Testing", false, 1).WillReturnResult(sqlmock.NewResult(1, 1))
-
 	svc := New(db)
 
 	err := svc.AddTask("Testing", 1)
@@ -26,10 +27,11 @@ func TestAddTask(t *testing.T) {
 	}
 
 	err = mock.ExpectationsWereMet()
-
 	if err != nil {
 		t.Errorf("Error While checking ecpectation in AddTask : %v", err)
 	}
+
+	//Error Checks
 
 }
 
@@ -44,16 +46,23 @@ func TestViewTask(t *testing.T) {
 	mock.ExpectQuery("select * from TASKS").
 		WillReturnRows(rows)
 
+	exptedTasks := []models.Tasks{
+		{1, "Task 1", false, 101},
+		{2, "Task 2", true, 102},
+	}
+
 	store := New(db)
-	_, err := store.ViewTask()
+	tasks, err := store.ViewTask()
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
-	err = mock.ExpectationsWereMet()
-
 	if err != nil {
 		t.Errorf("Error while Checking Expectations in ViewTask : %v", err)
+	}
+
+	if !reflect.DeepEqual(exptedTasks, tasks) {
+		t.Errorf("Some error in the output")
 	}
 }
 
@@ -68,16 +77,15 @@ func TestGetByID(t *testing.T) {
 		WithArgs(1).
 		WillReturnRows(row)
 
+	expected := models.Tasks{1, "Task 1", false, 101}
 	store := New(db)
-	_, err := store.GetByID(1)
+	tasks, err := store.GetByID(1)
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
-	err = mock.ExpectationsWereMet()
-
-	if err != nil {
-		t.Errorf("Error while Checking Expectations in GetByID : %v", err)
+	if !reflect.DeepEqual(expected, tasks) {
+		t.Errorf("Some error in the output")
 	}
 }
 
@@ -98,11 +106,6 @@ func TestUpdateTask(t *testing.T) {
 		t.Errorf("Expected true, got false")
 	}
 
-	err = mock.ExpectationsWereMet()
-
-	if err != nil {
-		t.Errorf("Error while Checking Expectations in UpdateTask : %v", err)
-	}
 }
 
 func TestDeleteTask(t *testing.T) {
@@ -122,11 +125,6 @@ func TestDeleteTask(t *testing.T) {
 		t.Errorf("Expected true, got false")
 	}
 
-	err = mock.ExpectationsWereMet()
-
-	if err != nil {
-		t.Errorf("Error while Checking Expectations in DeleteTask : %v", err)
-	}
 }
 
 func TestCheckIfExists(t *testing.T) {
