@@ -9,12 +9,6 @@ import (
 	"strconv"
 )
 
-type UserService interface {
-	AddUser(name string) error
-	ViewTask() (Model.UserSlice, error)
-	GetUserId(id int) (Model.User, error)
-}
-
 type handler struct {
 	service UserService
 }
