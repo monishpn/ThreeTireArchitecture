@@ -14,14 +14,16 @@ func mockAllocation(t *testing.T) (*sql.DB, sqlmock.Sqlmock, error) {
 func TestAddUser(t *testing.T) {
 	db, mock, err := mockAllocation(t)
 	if err != nil {
-		t.Errorf("Error while establising SQLmock : %v", err)
+		t.Errorf("Error while establishing SQLmock : %v", err)
 	}
 
 	defer db.Close()
 	svc := New(db)
 
 	mock.ExpectExec("insert into USERS (name) values (?) ").WithArgs("Ram").WillReturnResult(sqlmock.NewResult(1, 1))
+
 	err = svc.AddUser("Ram")
+
 	if err != nil {
 		t.Errorf("Error while adding data : %v", err)
 	}
@@ -31,13 +33,13 @@ func TestAddUser(t *testing.T) {
 		t.Errorf("Failed AddUser : %v", err)
 	}
 
-	//Errors Check
+	// Errors Check
 	mock.ExpectExec("insert into USERS (id) values (?) ").WithArgs("Ram").WillReturnResult(sqlmock.NewResult(0, 0))
+
 	err = svc.AddUser("Ram")
 	if err == nil {
 		t.Errorf("Expected Error, but dint get one ")
 	}
-
 }
 
 func TestGetUserByID(t *testing.T) {
@@ -62,7 +64,7 @@ func TestGetUserByID(t *testing.T) {
 		t.Errorf("Failed GetUserByID : %v", err)
 	}
 
-	//Error Check
+	// Error Check
 	mock.ExpectQuery("select * from USERS where uid").WillReturnRows(rows)
 
 	_, err = svc.GetUserByID(1)
@@ -70,7 +72,6 @@ func TestGetUserByID(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected Error but got none")
 	}
-
 }
 
 func TestViewUser(t *testing.T) {
@@ -95,13 +96,14 @@ func TestViewUser(t *testing.T) {
 		t.Errorf("Failed ViewUser : %v", err)
 	}
 
-	//Error Check
+	// Error Check
 	mock.ExpectQuery("Select * from User").WillReturnRows(rows)
+
 	_, err = svc.ViewUser()
+
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-
 }
 
 func TestCheckUserID(t *testing.T) {
@@ -111,21 +113,14 @@ func TestCheckUserID(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"uid"}).AddRow("Ram")
 	mock.ExpectQuery("select uid from USERS where uid=?").WithArgs(1).WillReturnRows(rows)
-	svc := New(db)
-	ans := svc.CheckUserID(1)
-	//if !ans {
-	//	t.Errorf("Expected True but got false")
-	//}
 
-	err := mock.ExpectationsWereMet()
-	if err != nil {
-		t.Errorf("Failed CheckUserID : %v", err)
-	}
+	svc := New(db)
 
 	// Error Check - No Rows
 	errRow := sqlmock.NewRows([]string{})
 	mock.ExpectQuery("select uid from USERS where uid=?").WithArgs(1).WillReturnRows(errRow)
-	ans = svc.CheckUserID(1)
+
+	ans := svc.CheckUserID(1)
 	if ans {
 		t.Errorf("Expected False but got true")
 	}
@@ -133,7 +128,9 @@ func TestCheckUserID(t *testing.T) {
 	// Error Check
 
 	mock.ExpectQuery("select name from USERS where uid=?").WithArgs(1).WillReturnRows(errRow)
+
 	ans = svc.CheckUserID(1)
+
 	if ans {
 		t.Errorf("Expected Error")
 	}

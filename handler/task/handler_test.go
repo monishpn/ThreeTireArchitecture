@@ -14,6 +14,7 @@ import (
 func TestAddTask(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockService := NewMockTaskService(ctrl)
+
 	svc := New(mockService)
 
 	testCases := []struct {
@@ -58,6 +59,7 @@ func TestAddTask(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/task", strings.NewReader(tc.input))
 			req.Header.Set("Content-Type", "application/json")
+
 			w := httptest.NewRecorder()
 
 			svc.Addtask(w, req)
@@ -65,6 +67,7 @@ func TestAddTask(t *testing.T) {
 			if w.Code != tc.opCode {
 				t.Errorf("Expected status %d, got %d", tc.opCode, w.Code)
 			}
+
 			if !bytes.Contains(w.Body.Bytes(), tc.opMsg) {
 				t.Errorf("Expected response to contain %q, got %q", tc.opMsg, w.Body.String())
 			}
@@ -83,25 +86,31 @@ func TestGetTask(t *testing.T) {
 	mockService.EXPECT().GetByID(1).Return(task, nil)
 	req := httptest.NewRequest(http.MethodGet, "/task/{id}", nil)
 	req.SetPathValue("id", "1")
+
 	w := httptest.NewRecorder()
 	svc.Gettask(w, req)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %d", w.Code)
 	}
+
 	if w.Body.String() != task.String() {
 		t.Errorf("Expected %s, got %s", task.String(), w.Body.String())
 	}
 
 	// Custom error
 	mockService.EXPECT().GetByID(1).Return(models.Tasks{}, models.CustomError{Code: http.StatusNotFound, Message: "Task not found"})
+
 	req = httptest.NewRequest(http.MethodGet, "/task/{id}", nil)
 	req.SetPathValue("id", "1")
+
 	w = httptest.NewRecorder()
 	svc.Gettask(w, req)
+
 	if w.Code != http.StatusNotFound {
 		t.Errorf("Expected 404, got %d", w.Code)
 	}
+
 	if w.Body.String() != "Task not found" {
 		t.Errorf("Expected 'Task not found', got %s", w.Body.String())
 	}
@@ -109,8 +118,10 @@ func TestGetTask(t *testing.T) {
 	// Invalid path param
 	req = httptest.NewRequest(http.MethodGet, "/task/{id}", nil)
 	req.SetPathValue("id", "abc")
+
 	w = httptest.NewRecorder()
 	svc.Gettask(w, req)
+
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %d", w.Code)
 	}
@@ -119,6 +130,7 @@ func TestGetTask(t *testing.T) {
 func TestViewTask(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockService := NewMockTaskService(ctrl)
+
 	svc := New(mockService)
 
 	tasks := []models.Tasks{
@@ -129,13 +141,16 @@ func TestViewTask(t *testing.T) {
 	// Success case
 	mockService.EXPECT().ViewTask().Return(tasks, nil)
 	req := httptest.NewRequest(http.MethodGet, "/task", nil)
+
 	w := httptest.NewRecorder()
 	svc.Viewtask(w, req)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %d", w.Code)
 	}
+
 	expected, _ := json.Marshal(tasks)
+
 	if !bytes.Equal(w.Body.Bytes(), expected) {
 		t.Errorf("Expected %s, got %s", expected, w.Body.Bytes())
 	}
@@ -143,11 +158,14 @@ func TestViewTask(t *testing.T) {
 	// Error case
 	mockService.EXPECT().ViewTask().Return(nil, models.CustomError{Code: http.StatusInternalServerError, Message: "DB Error"})
 	req = httptest.NewRequest(http.MethodGet, "/task", nil)
+
 	w = httptest.NewRecorder()
 	svc.Viewtask(w, req)
+
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("Expected 500, got %d", w.Code)
 	}
+
 	if w.Body.String() != "DB Error" {
 		t.Errorf("Expected DB Error, got %s", w.Body.String())
 	}
@@ -160,13 +178,17 @@ func TestUpdateTask(t *testing.T) {
 
 	mockService.EXPECT().UpdateTask(1).Return(true, nil)
 	req := httptest.NewRequest(http.MethodPut, "/task/{id}", nil)
+
 	req.SetPathValue("id", "1")
+
 	w := httptest.NewRecorder()
+
 	svc.Updatetask(w, req)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200, got %d", w.Code)
 	}
+
 	if w.Body.String() != "Task updated" {
 		t.Errorf("Expected 'Task updated', got %s", w.Body.String())
 	}
@@ -174,13 +196,17 @@ func TestUpdateTask(t *testing.T) {
 	// Error case
 	mockService.EXPECT().UpdateTask(2).Return(false, models.CustomError{Code: 404, Message: "Task not found"})
 	req = httptest.NewRequest(http.MethodPut, "/task/{id}", nil)
+
 	req.SetPathValue("id", "2")
+
 	w = httptest.NewRecorder()
+
 	svc.Updatetask(w, req)
 
 	if w.Code != http.StatusNotFound {
 		t.Errorf("Expected 404, got %d", w.Code)
 	}
+
 	if w.Body.String() != "Task not found" {
 		t.Errorf("Expected 'Task not found', got %s", w.Body.String())
 	}
@@ -188,6 +214,7 @@ func TestUpdateTask(t *testing.T) {
 	// Invalid ID
 	req = httptest.NewRequest(http.MethodPut, "/task/{id}", nil)
 	req.SetPathValue("id", "xyz")
+
 	w = httptest.NewRecorder()
 	svc.Updatetask(w, req)
 
@@ -204,12 +231,14 @@ func TestDeleteTask(t *testing.T) {
 	mockService.EXPECT().DeleteTask(1).Return(true, nil)
 	req := httptest.NewRequest(http.MethodDelete, "/task/{id}", nil)
 	req.SetPathValue("id", "1")
+
 	w := httptest.NewRecorder()
 	svc.Deletetask(w, req)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200, got %d", w.Code)
 	}
+
 	if w.Body.String() != "Task deleted" {
 		t.Errorf("Expected 'Task deleted', got %s", w.Body.String())
 	}
@@ -217,12 +246,14 @@ func TestDeleteTask(t *testing.T) {
 	mockService.EXPECT().DeleteTask(2).Return(false, models.CustomError{Code: 500, Message: "Internal error"})
 	req = httptest.NewRequest(http.MethodDelete, "/task/{id}", nil)
 	req.SetPathValue("id", "2")
+
 	w = httptest.NewRecorder()
 	svc.Deletetask(w, req)
 
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("Expected 500, got %d", w.Code)
 	}
+
 	if w.Body.String() != "Internal error" {
 		t.Errorf("Expected 'Internal error', got %s", w.Body.String())
 	}
@@ -230,6 +261,7 @@ func TestDeleteTask(t *testing.T) {
 	// Invalid ID
 	req = httptest.NewRequest(http.MethodDelete, "/task/{id}", nil)
 	req.SetPathValue("id", "bad")
+
 	w = httptest.NewRecorder()
 	svc.Deletetask(w, req)
 

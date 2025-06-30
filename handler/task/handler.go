@@ -13,13 +13,12 @@ type Handler struct {
 	service TaskService
 }
 
-// New creates a new task handler
+// New creates a new task handler.
 func New(service TaskService) *Handler {
 	return &Handler{service: service}
 }
 
 func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
-
 	defer r.Body.Close()
 
 	msg, err := io.ReadAll(r.Body)
@@ -49,25 +48,28 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		cErr := err.(Models.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Task added"))
-	return
-
 }
 
-func (h *Handler) Viewtask(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Viewtask(w http.ResponseWriter, _ *http.Request) {
 	ans, err := h.service.ViewTask()
 	if err != nil {
 		cErr := err.(Models.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
+
 	b, _ := json.Marshal(ans)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -93,8 +95,10 @@ func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
 	ans, err = h.service.GetByID(index)
 	if err != nil {
 		cErr := err.(Models.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
 
@@ -108,6 +112,7 @@ func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
 	index, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+
 		log.Printf("%s", err.Error())
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 
@@ -116,12 +121,16 @@ func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
 
 	var ans bool
 	ans, err = h.service.UpdateTask(index)
+
 	if err != nil {
 		cErr := err.(Models.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
+
 	if ans {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Task updated"))
@@ -135,6 +144,7 @@ func (h *Handler) Deletetask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("%s", err.Error())
+
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 
 		return
@@ -142,15 +152,18 @@ func (h *Handler) Deletetask(w http.ResponseWriter, r *http.Request) {
 
 	var ans bool
 	ans, err = h.service.DeleteTask(index)
+
 	if err != nil {
 		cErr := err.(Models.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
+
 	if ans {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Task deleted"))
-
 	}
 }

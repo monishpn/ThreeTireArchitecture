@@ -18,7 +18,9 @@ func TestAddTask(t *testing.T) {
 	db, mock, _ := mockAllocation(t)
 	defer db.Close()
 
-	mock.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?,?)").WithArgs("Testing", false, 1).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?,?)").
+		WithArgs("Testing", false, 1).WillReturnResult(sqlmock.NewResult(1, 1))
+
 	svc := New(db)
 
 	err := svc.AddTask("Testing", 1)
@@ -31,13 +33,14 @@ func TestAddTask(t *testing.T) {
 		t.Errorf("Error While checking ecpectation in AddTask : %v", err)
 	}
 
-	//Error Checks
+	// Error Checks
 	mock.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?)").WithArgs("testing").WillReturnResult(sqlmock.NewResult(0, 1))
+
 	err = svc.AddTask("Testing", 1)
+
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-
 }
 
 func TestViewTask(t *testing.T) {
@@ -58,6 +61,7 @@ func TestViewTask(t *testing.T) {
 
 	store := New(db)
 	tasks, err := store.ViewTask()
+
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
@@ -70,24 +74,14 @@ func TestViewTask(t *testing.T) {
 		t.Errorf("Some error in the output")
 	}
 
-	//Error Check
+	// Error Check
 	mock.ExpectQuery("Select * from Tasks").WillReturnRows(rows)
+
 	_, err = store.ViewTask()
+
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-
-	// Error for scan empty row
-	//rows = sqlmock.NewRows([]string{"id", "task", "completed", "uid", "extra"}).
-	//	AddRow(1, "Task 1", false, 101, 0).
-	//	AddRow(2, "Task 2", true, 102, 0)
-	//
-	//mock.ExpectQuery("select * from TASKS").
-	//	WillReturnRows(rows)
-	//_, err = store.ViewTask()
-	//if err == nil {
-	//	t.Errorf("Expected  error")
-	//}
 }
 
 func TestGetByID(t *testing.T) {
@@ -104,6 +98,7 @@ func TestGetByID(t *testing.T) {
 	expected := models.Tasks{1, "Task 1", false, 101}
 	store := New(db)
 	tasks, err := store.GetByID(1)
+
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
@@ -112,7 +107,7 @@ func TestGetByID(t *testing.T) {
 		t.Errorf("Some error in the output")
 	}
 
-	//error check
+	// error check
 	mock.ExpectQuery("select * from Task where uid").WillReturnRows(row)
 
 	_, err = store.GetByID(1)
@@ -132,22 +127,24 @@ func TestUpdateTask(t *testing.T) {
 
 	store := New(db)
 	ok, err := store.UpdateTask(1)
+
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
+
 	if !ok {
 		t.Errorf("Expected true, got false")
 	}
 
-	//error check
+	// error check
 	mock.ExpectExec("UPDATE task SET completed= true WHERE id").
 		WithArgs(1).
 		WillReturnResult(sqlmock.NewResult(0, 1))
+
 	_, err = store.UpdateTask(1)
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-
 }
 
 func TestDeleteTask(t *testing.T) {
@@ -160,22 +157,25 @@ func TestDeleteTask(t *testing.T) {
 
 	store := New(db)
 	ok, err := store.DeleteTask(1)
+
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
+
 	if !ok {
 		t.Errorf("Expected true, got false")
 	}
 
-	//error check
+	// error check
 	mock.ExpectExec("delete from TASKS where id").
 		WithArgs(1).
 		WillReturnResult(sqlmock.NewResult(0, 1))
+
 	_, err = store.DeleteTask(1)
+
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-
 }
 
 func TestCheckIfExists(t *testing.T) {
@@ -190,6 +190,7 @@ func TestCheckIfExists(t *testing.T) {
 
 	store := New(db)
 	exists := store.CheckIfExists(1)
+
 	if !exists {
 		t.Errorf("Expected true, got false")
 	}

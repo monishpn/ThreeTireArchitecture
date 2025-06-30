@@ -10,7 +10,7 @@ import (
 )
 
 func TestAddTask(t *testing.T) {
-	test_cases := []struct {
+	testCases := []struct {
 		desc   string
 		task   string
 		uid    int
@@ -29,30 +29,29 @@ func TestAddTask(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
-	for _, test := range test_cases {
+	for _, test := range testCases {
 		if test.ifMock {
 			mockUserService.EXPECT().CheckUserID(test.uid).Return(test.ifUser)
+
 			if test.ifUser {
 				mockTaskStore.EXPECT().AddTask(test.task, test.uid).Return(test.expErr)
 			}
 		}
+
 		err := svc.AddTask(test.task, test.uid)
 
 		if !errors.Is(test.expErr, err) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.expErr, err)
 		}
-
 	}
 }
 
 func TestView(t *testing.T) {
-	exp := []models.Tasks{
-		{
-			1, "Testing-1", false, 1,
-		},
-		{
-			2, "testing-2", false, 1,
-		},
+	exp := []models.Tasks{{
+		1, "Testing-1", false, 1,
+	}, {
+		2, "testing-2", false, 1,
+	},
 	}
 
 	ctrl := gomock.NewController(t)
@@ -66,13 +65,14 @@ func TestView(t *testing.T) {
 	if err != nil {
 		t.Errorf("%v.ViewTask(): expected no error, but got %v", t.Name(), err)
 	}
+
 	if !reflect.DeepEqual(op, exp) {
 		t.Errorf("%v.ViewTask(): expected %v, but got %v", t.Name(), exp, op)
 	}
 }
 
 func TestGetByID(t *testing.T) {
-	test_cases := []struct {
+	testCases := []struct {
 		desc     string
 		Tid      int
 		ifExists bool
@@ -89,12 +89,13 @@ func TestGetByID(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
-	for _, test := range test_cases {
+	for _, test := range testCases {
 		mockTaskStore.EXPECT().CheckIfExists(test.Tid).Return(test.ifExists)
 
 		if test.ifMock {
 			mockTaskStore.EXPECT().GetByID(test.Tid).Return(test.exp, test.expErr)
 		}
+
 		op, err := svc.GetByID(test.Tid)
 
 		if !errors.Is(test.expErr, err) {
@@ -104,12 +105,11 @@ func TestGetByID(t *testing.T) {
 		if !reflect.DeepEqual(test.exp, op) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.exp, op)
 		}
-
 	}
 }
 
 func TestUpdateTask(t *testing.T) {
-	test_cases := []struct {
+	testCases := []struct {
 		desc     string
 		Tid      int
 		ifExists bool
@@ -126,12 +126,13 @@ func TestUpdateTask(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
-	for _, test := range test_cases {
+	for _, test := range testCases {
 		mockTaskStore.EXPECT().CheckIfExists(test.Tid).Return(test.ifExists)
 
 		if test.ifMock {
 			mockTaskStore.EXPECT().UpdateTask(test.Tid).Return(test.exp, test.expErr)
 		}
+
 		op, err := svc.UpdateTask(test.Tid)
 
 		if !errors.Is(test.expErr, err) {
@@ -141,12 +142,11 @@ func TestUpdateTask(t *testing.T) {
 		if !reflect.DeepEqual(test.exp, op) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.exp, op)
 		}
-
 	}
 }
 
 func TestDeleteTask(t *testing.T) {
-	test_cases := []struct {
+	testCases := []struct {
 		desc     string
 		Tid      int
 		ifExists bool
@@ -163,12 +163,13 @@ func TestDeleteTask(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
-	for _, test := range test_cases {
+	for _, test := range testCases {
 		mockTaskStore.EXPECT().CheckIfExists(test.Tid).Return(test.ifExists)
 
 		if test.ifMock {
 			mockTaskStore.EXPECT().DeleteTask(test.Tid).Return(test.exp, test.expErr)
 		}
+
 		op, err := svc.DeleteTask(test.Tid)
 
 		if !errors.Is(test.expErr, err) {
@@ -178,6 +179,5 @@ func TestDeleteTask(t *testing.T) {
 		if !reflect.DeepEqual(test.exp, op) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.exp, op)
 		}
-
 	}
 }

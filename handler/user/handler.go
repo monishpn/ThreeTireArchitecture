@@ -26,6 +26,7 @@ func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		log.Printf("Error Reading Body: %s\n", err)
+
 		return
 	}
 
@@ -37,28 +38,34 @@ func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(errors.New("Error Unmarshalling").Error()))
+
 		log.Printf("Error Parsing Body: %s\n", err)
+
 		return
 	}
 
 	err = h.service.AddUser(input.T)
 	if err != nil {
 		cErr, _ := err.(Model.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("User Created"))
 }
 
 func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-
 	defer r.Body.Close()
 	index, err := strconv.Atoi(r.PathValue("id"))
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(errors.New("Invalid ID").Error()))
+
 		return
 	}
 
@@ -66,26 +73,26 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		cErr, _ := err.(Model.CustomError)
+
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
+
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(ans.String()))
-
 }
 
-func (h *handler) Viewuser(w http.ResponseWriter, r *http.Request) {
-
+func (h *handler) Viewuser(w http.ResponseWriter, _ *http.Request) {
 	ans, err := h.service.ViewTask()
 	if err != nil {
 		cErr, _ := err.(Model.CustomError)
 
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
-		return
 
+		return
 	}
 
 	b, _ := json.Marshal(ans)
