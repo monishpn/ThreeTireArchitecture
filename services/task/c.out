@@ -12,7 +12,7 @@ awesomeProject/services/task/mock_interface.go:96.67,99.2 2 1
 awesomeProject/services/task/mock_interface.go:102.58,108.2 5 1
 awesomeProject/services/task/mock_interface.go:111.70,114.2 2 1
 awesomeProject/services/task/mock_interface.go:117.60,123.2 5 1
-awesomeProject/services/task/mock_interface.go:126.62,129.2 2 1
+awesomeProject/services/task/mock_interface.go:126.62,129.2 2 0
 awesomeProject/services/task/mock_interface.go:144.67,148.2 3 1
 awesomeProject/services/task/mock_interface.go:151.65,153.2 1 1
 awesomeProject/services/task/mock_interface.go:156.52,161.2 4 1

@@ -3,6 +3,7 @@ package user
 import (
 	Model "awesomeProject/models"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -35,7 +36,7 @@ func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(msg, &input)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(errors.New("Error Unmarshalling").Error()))
 		log.Printf("Error Parsing Body: %s\n", err)
 		return
 	}
@@ -57,7 +58,7 @@ func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	index, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(errors.New("Invalid ID").Error()))
 		return
 	}
 
@@ -83,10 +84,6 @@ func (h *handler) Viewuser(w http.ResponseWriter, r *http.Request) {
 
 		w.WriteHeader(cErr.Code)
 		w.Write([]byte(cErr.Message))
-		return
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`Something went wrong!`))
 		return
 
 	}
