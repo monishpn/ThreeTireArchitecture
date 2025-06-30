@@ -1,0 +1,26 @@
+mode: set
+awesomeProject/store/task/store.go:15.29,17.2 1 1
+awesomeProject/store/task/store.go:19.53,22.16 2 1
+awesomeProject/store/task/store.go:22.16,26.3 2 0
+awesomeProject/store/task/store.go:27.2,27.12 1 1
+awesomeProject/store/task/store.go:30.52,40.16 7 1
+awesomeProject/store/task/store.go:40.16,44.3 2 0
+awesomeProject/store/task/store.go:46.2,47.17 2 1
+awesomeProject/store/task/store.go:47.17,49.17 2 1
+awesomeProject/store/task/store.go:49.17,53.4 2 0
+awesomeProject/store/task/store.go:54.3,54.69 1 1
+awesomeProject/store/task/store.go:57.2,57.21 1 1
+awesomeProject/store/task/store.go:60.55,68.16 6 1
+awesomeProject/store/task/store.go:68.16,72.3 2 0
+awesomeProject/store/task/store.go:73.2,73.53 1 1
+awesomeProject/store/task/store.go:76.50,79.16 2 1
+awesomeProject/store/task/store.go:79.16,83.3 2 0
+awesomeProject/store/task/store.go:84.2,84.18 1 1
+awesomeProject/store/task/store.go:87.50,90.16 2 1
+awesomeProject/store/task/store.go:90.16,94.3 2 0
+awesomeProject/store/task/store.go:95.2,95.18 1 1
+awesomeProject/store/task/store.go:98.43,103.16 4 1
+awesomeProject/store/task/store.go:103.16,104.27 1 0
+awesomeProject/store/task/store.go:104.27,106.4 1 0
+awesomeProject/store/task/store.go:107.3,108.15 2 0
+awesomeProject/store/task/store.go:110.2,110.13 1 1
