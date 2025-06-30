@@ -35,7 +35,7 @@ func (s *Service) ViewTask() (Model.UserSlice, error) {
 		return s.store.ViewUser()
 	}
 
-	return nil, Model.CustomError{http.StatusNoContent, "No user Found"}
+	return Model.UserSlice{}, Model.CustomError{http.StatusNoContent, "No user Found"}
 
 }
 

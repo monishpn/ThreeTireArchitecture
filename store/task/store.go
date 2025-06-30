@@ -54,6 +54,7 @@ func (s *Store) ViewTask() ([]Models.Tasks, error) {
 		answers = append(answers, Models.Tasks{tID, task, completed, uid})
 
 	}
+
 	return answers, nil
 }
 

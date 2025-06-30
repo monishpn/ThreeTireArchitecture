@@ -13,7 +13,6 @@ type UserService interface {
 	AddUser(name string) error
 	ViewTask() (Model.UserSlice, error)
 	GetUserId(id int) (Model.User, error)
-	CheckUserID(id int) bool
 }
 
 type handler struct {
@@ -86,17 +85,16 @@ func (h *handler) Viewuser(w http.ResponseWriter, r *http.Request) {
 
 	ans, err := h.service.ViewTask()
 	if err != nil {
-		cErr, ok := err.(Model.CustomError)
-		if ok {
-			w.WriteHeader(cErr.Code)
-			w.Write([]byte(cErr.Message))
-			return
-		}
+		cErr, _ := err.(Model.CustomError)
+
+		w.WriteHeader(cErr.Code)
+		w.Write([]byte(cErr.Message))
+		return
 
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`Something went wrong!`))
 		return
-		
+
 	}
 
 	b, _ := json.Marshal(ans)
