@@ -12,6 +12,7 @@
 package main
 
 import (
+	"gofr.dev/pkg/gofr"
 	"log"
 	"net/http"
 	"time"
@@ -19,7 +20,6 @@ import (
 	_ "awesomeProject/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"awesomeProject/datasource"
 	Thandler "awesomeProject/handler/task"
 	Tservice "awesomeProject/services/task"
 	Tstore "awesomeProject/store/task"
@@ -30,11 +30,8 @@ import (
 )
 
 func main() {
-	db, err := datasource.New("root:root123@tcp(localhost:3306)/test_db")
-	if err != nil {
-		log.Println(err)
-		return
-	}
+
+	app := gofr.New()
 
 	userStore := Ustore.New(db)
 	userSvc := Uservice.New(userStore)
