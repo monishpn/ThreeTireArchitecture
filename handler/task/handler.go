@@ -35,7 +35,7 @@ func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	err = h.service.AddTask(reqBody.Task, reqBody.UserID)
+	err = h.service.AddTask(ctx, reqBody.Task, reqBody.UserID)
 
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /task [get]
 func (h *Handler) Viewtask(ctx *gofr.Context) (any, error) {
-	ans, err := h.service.ViewTask()
+	ans, err := h.service.ViewTask(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	ans, err := h.service.GetByID(id)
+	ans, err := h.service.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = h.service.UpdateTask(id)
+	_, err = h.service.UpdateTask(ctx, id)
 
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	_, err = h.service.DeleteTask(id)
+	_, err = h.service.DeleteTask(ctx, id)
 
 	if err != nil {
 		return nil, err

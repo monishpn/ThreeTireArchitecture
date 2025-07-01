@@ -3,6 +3,7 @@ package user
 import (
 	Models "awesomeProject/models"
 	"database/sql"
+	"gofr.dev/pkg/gofr"
 	"log"
 	"net/http"
 )
@@ -15,8 +16,8 @@ func New(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) AddUser(name string) error {
-	_, err := s.db.Exec("insert into USERS (name) values (?)", name)
+func (s *Store) AddUser(ctx *gofr.Context, name string) error {
+	_, err := ctx.SQL.ExecContext(ctx, "insert into USERS (name) values (?)", name)
 	if err != nil {
 		log.Println(err)
 		return Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
@@ -27,23 +28,24 @@ func (s *Store) AddUser(name string) error {
 	return nil
 }
 
-func (s *Store) GetUserByID(id int) (Models.User, error) {
+func (s *Store) GetUserByID(ctx *gofr.Context, id int) (Models.User, error) {
 	var uid int
 
 	var name string
 
-	err := s.db.QueryRow("select * from USERS where uid=?", id).Scan(&uid, &name)
+	err := ctx.SQL.QueryRowContext(ctx, "select * from USERS where uid=?", id).Scan(&uid, &name)
 	if err != nil {
 		log.Println(err)
 		return Models.User{},
 			Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
 	}
+
 	return Models.User{uid, name}, nil
 }
 
-func (s *Store) ViewUser() ([]Models.User, error) {
+func (s *Store) ViewUser(ctx *gofr.Context) ([]Models.User, error) {
 	var users []Models.User
-	row, err := s.db.Query("Select * from USERS")
+	row, err := ctx.SQL.QueryContext(ctx, "Select * from USERS")
 
 	if err != nil {
 		return users, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
@@ -66,9 +68,9 @@ func (s *Store) ViewUser() ([]Models.User, error) {
 	return users, nil
 }
 
-func (s *Store) CheckUserID(id int) bool {
+func (s *Store) CheckUserID(ctx *gofr.Context, id int) bool {
 	var uid int
-	err := s.db.QueryRow("select uid from USERS where uid=?", id).Scan(&uid)
+	err := ctx.SQL.QueryRowContext(ctx, "select uid from USERS where uid=?", id).Scan(&uid)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -83,9 +85,14 @@ func (s *Store) CheckUserID(id int) bool {
 	return true
 }
 
-func (s *Store) CheckIfRowsExists() bool {
+func (s *Store) CheckIfRowsExists(ctx *gofr.Context) bool {
 	var num int
-	s.db.QueryRow("Select COUNT(*) from USERS").Scan(&num)
+	err := ctx.SQL.QueryRowContext(ctx, "Select COUNT(*) from USERS").Scan(&num)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+	}
 
 	return num > 0
 }

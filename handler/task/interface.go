@@ -1,11 +1,14 @@
 package task
 
-import Models "awesomeProject/models"
+import (
+	Models "awesomeProject/models"
+	"gofr.dev/pkg/gofr"
+)
 
 type TaskService interface {
-	AddTask(task string, uid int) error
-	ViewTask() ([]Models.Tasks, error)
-	GetByID(id int) (Models.Tasks, error)
-	UpdateTask(id int) (bool, error)
-	DeleteTask(id int) (bool, error)
+	AddTask(ctx *gofr.Context, task string, uid int) error
+	ViewTask(ctx *gofr.Context) ([]Models.Tasks, error)
+	GetByID(ctx *gofr.Context, id int) (Models.Tasks, error)
+	UpdateTask(ctx *gofr.Context, id int) (bool, error)
+	DeleteTask(ctx *gofr.Context, id int) (bool, error)
 }

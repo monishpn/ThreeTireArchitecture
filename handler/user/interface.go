@@ -1,9 +1,12 @@
 package user
 
-import Model "awesomeProject/models"
+import (
+	Model "awesomeProject/models"
+	"gofr.dev/pkg/gofr"
+)
 
 type UserService interface {
-	AddUser(name string) error
-	ViewTask() (Model.UserSlice, error)
-	GetUserId(id int) (Model.User, error)
+	AddUser(ctx *gofr.Context, name string) error
+	ViewTask(ctx *gofr.Context) (Model.UserSlice, error)
+	GetUserId(ctx *gofr.Context, id int) (Model.User, error)
 }

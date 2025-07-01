@@ -23,7 +23,7 @@ func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	err = h.service.AddUser(reqBody.T)
+	err = h.service.AddUser(ctx, reqBody.T)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	ans, err := h.service.GetUserId(id)
+	ans, err := h.service.GetUserId(ctx, id)
 
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
 }
 
 func (h *handler) Viewuser(ctx *gofr.Context) (any, error) {
-	ans, err := h.service.ViewTask()
+	ans, err := h.service.ViewTask(ctx)
 	if err != nil {
 		return nil, err
 	}
