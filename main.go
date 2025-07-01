@@ -1,9 +1,23 @@
+// @title Task API
+// @version 1.0
+// @description This is a sample task management API.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Monish
+// @contact.email you@example.com
+
+// @host localhost:8080
+// @BasePath /
+
 package main
 
 import (
 	"log"
 	"net/http"
 	"time"
+
+	_ "awesomeProject/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"awesomeProject/datasource"
 	Thandler "awesomeProject/handler/task"
@@ -39,6 +53,8 @@ func main() {
 	http.HandleFunc("GET /user", userHandler.Viewuser)
 	http.HandleFunc("GET /user/{id}", userHandler.GetUserByID)
 	http.HandleFunc("POST /user", userHandler.AddUser)
+
+	http.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	server := &http.Server{
 		Addr:         ":8080",
