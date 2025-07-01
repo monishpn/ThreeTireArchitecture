@@ -7,6 +7,10 @@ type User struct {
 	Name   string
 }
 
+type Input struct {
+	T string `json:"name"`
+}
+
 func (usr User) String() string {
 	return fmt.Sprintf("ID: %d, Name: %s", usr.UserID, usr.Name)
 }

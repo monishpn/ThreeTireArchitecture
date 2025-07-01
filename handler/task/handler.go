@@ -2,10 +2,7 @@ package task
 
 import (
 	Models "awesomeProject/models"
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
+	"gofr.dev/pkg/gofr"
 	"strconv"
 )
 
@@ -29,42 +26,22 @@ func New(service TaskService) *Handler {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /task [post]
-func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	msg, err := io.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-		return
-	}
+func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
 
 	var reqBody Models.AddTaskRequest
 
-	err = json.Unmarshal(msg, &reqBody)
+	err := ctx.Bind(&reqBody)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-		return
+		return nil, err
 	}
 
 	err = h.service.AddTask(reqBody.Task, reqBody.UserID)
 
 	if err != nil {
-		cErr := err.(Models.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Task added"))
+	return "Task added", nil
 }
 
 // Viewtask godoc
@@ -75,22 +52,13 @@ func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} Models.Tasks
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /task [get]
-func (h *Handler) Viewtask(w http.ResponseWriter, _ *http.Request) {
+func (h *Handler) Viewtask(ctx *gofr.Context) (any, error) {
 	ans, err := h.service.ViewTask()
 	if err != nil {
-		cErr := err.(Models.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	b, _ := json.Marshal(ans)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	return ans, nil
 }
 
 // Gettask godoc
@@ -103,33 +71,19 @@ func (h *Handler) Viewtask(w http.ResponseWriter, _ *http.Request) {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 404 {string} string "Not Found"
 // @Router /task/{id} [get]
-func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 
-	index, err := strconv.Atoi(r.PathValue("id"))
-
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		log.Printf("%s", err.Error())
-
-		return
+		return nil, err
 	}
 
-	var ans Models.Tasks
-
-	ans, err = h.service.GetByID(index)
+	ans, err := h.service.GetByID(id)
 	if err != nil {
-		cErr := err.(Models.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(ans.String()))
+	return ans, nil
 }
 
 // Updatetask godoc
@@ -142,35 +96,18 @@ func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 404 {string} string "Not Found"
 // @Router /task/{id} [put]
-func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	index, err := strconv.Atoi(r.PathValue("id"))
+func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-
-		return
+		return nil, err
 	}
-
-	var ans bool
-	ans, err = h.service.UpdateTask(index)
+	_, err = h.service.UpdateTask(id)
 
 	if err != nil {
-		cErr := err.(Models.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	if ans {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Task updated"))
-	}
+	return "Task updated", nil
 }
 
 // Deletetask godoc
@@ -183,33 +120,18 @@ func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 404 {string} string "Not Found"
 // @Router /task/{id} [delete]
-func (h *Handler) Deletetask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
 
-	index, err := strconv.Atoi(r.PathValue("id"))
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("%s", err.Error())
-
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-
-		return
+		return nil, err
 	}
 
-	var ans bool
-	ans, err = h.service.DeleteTask(index)
+	_, err = h.service.DeleteTask(id)
 
 	if err != nil {
-		cErr := err.(Models.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	if ans {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Task deleted"))
-	}
+	return "Task deleted", nil
 }

@@ -12,17 +12,13 @@
 package main
 
 import (
-	"gofr.dev/pkg/gofr"
-	"log"
-	"net/http"
-	"time"
-
+	"awesomeProject/datasource"
 	_ "awesomeProject/docs"
-	httpSwagger "github.com/swaggo/http-swagger"
-
 	Thandler "awesomeProject/handler/task"
 	Tservice "awesomeProject/services/task"
 	Tstore "awesomeProject/store/task"
+	"gofr.dev/pkg/gofr"
+	"log"
 
 	Uhandler "awesomeProject/handler/user"
 	Uservice "awesomeProject/services/user"
@@ -30,6 +26,12 @@ import (
 )
 
 func main() {
+
+	db, err := datasource.New("root:root123@tcp(localhost:3306)/test_db")
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	app := gofr.New()
 
@@ -41,28 +43,19 @@ func main() {
 	taskSvc := Tservice.New(taskStore, userSvc)
 	taskHandler := Thandler.New(taskSvc)
 
-	http.HandleFunc("GET /task", taskHandler.Viewtask)
-	http.HandleFunc("GET /task/{id}", taskHandler.Gettask)
-	http.HandleFunc("POST /task", taskHandler.Addtask)
-	http.HandleFunc("PUT /task/{id}", taskHandler.Updatetask)
-	http.HandleFunc("DELETE /task/{id}", taskHandler.Deletetask)
+	app.GET("/", func(ctx *gofr.Context) (any, error) {
+		return "Hello World!", nil
+	})
 
-	http.HandleFunc("GET /user", userHandler.Viewuser)
-	http.HandleFunc("GET /user/{id}", userHandler.GetUserByID)
-	http.HandleFunc("POST /user", userHandler.AddUser)
+	app.GET("/task", taskHandler.Viewtask)
+	app.GET("/task/{id}", taskHandler.Gettask)
+	app.POST("/task", taskHandler.Addtask)
+	app.PUT("/task/{id}", taskHandler.Updatetask)
+	app.DELETE("/task/{id}", taskHandler.Deletetask)
 
-	http.Handle("/swagger/", httpSwagger.WrapHandler)
+	app.GET("/user", userHandler.Viewuser)
+	app.GET("/user/{id}", userHandler.GetUserByID)
+	app.POST("/user", userHandler.AddUser)
 
-	server := &http.Server{
-		Addr:         ":8080",
-		Handler:      nil,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  15 * time.Second,
-	}
-
-	err = server.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
+	app.Run()
 }

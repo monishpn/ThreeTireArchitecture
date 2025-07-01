@@ -2,11 +2,7 @@ package user
 
 import (
 	Model "awesomeProject/models"
-	"encoding/json"
-	"errors"
-	"io"
-	"log"
-	"net/http"
+	"gofr.dev/pkg/gofr"
 	"strconv"
 )
 
@@ -18,86 +14,44 @@ func New(service UserService) *handler {
 	return &handler{service}
 }
 
-func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
 
-	msg, err := io.ReadAll(r.Body)
+	var reqBody Model.Input
+
+	err := ctx.Bind(&reqBody)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		log.Printf("Error Reading Body: %s\n", err)
-
-		return
+		return nil, err
 	}
 
-	var input struct {
-		T string `json:"name"`
-	}
-
-	err = json.Unmarshal(msg, &input)
+	err = h.service.AddUser(reqBody.T)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errors.New("Error Unmarshalling").Error()))
-
-		log.Printf("Error Parsing Body: %s\n", err)
-
-		return
+		return nil, err
 	}
 
-	err = h.service.AddUser(input.T)
-	if err != nil {
-		cErr, _ := err.(Model.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User Created"))
+	return "User Created", nil
 }
 
-func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	index, err := strconv.Atoi(r.PathValue("id"))
+func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
 
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errors.New("Invalid ID").Error()))
-
-		return
+		return nil, err
 	}
 
-	ans, err := h.service.GetUserId(index)
+	ans, err := h.service.GetUserId(id)
 
 	if err != nil {
-		cErr, _ := err.(Model.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(ans.String()))
+	return ans, nil
 }
 
-func (h *handler) Viewuser(w http.ResponseWriter, _ *http.Request) {
+func (h *handler) Viewuser(ctx *gofr.Context) (any, error) {
 	ans, err := h.service.ViewTask()
 	if err != nil {
-		cErr, _ := err.(Model.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-
-		return
+		return nil, err
 	}
 
-	b, _ := json.Marshal(ans)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	return ans, nil
 }
