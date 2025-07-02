@@ -6,7 +6,7 @@
 //	mockgen -source interface.go -destination=mock_interface.go -package=user
 //
 
-// Package task is a generated GoMock package.
+// Package user is a generated GoMock package.
 package user
 
 import (
@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
+	gofr "gofr.dev/pkg/gofr"
 )
 
 // MockUserService is a mock of UserService interface.
@@ -41,45 +42,45 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 }
 
 // AddUser mocks base method.
-func (m *MockUserService) AddUser(name string) error {
+func (m *MockUserService) AddUser(ctx *gofr.Context, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUser", name)
+	ret := m.ctrl.Call(m, "AddUser", ctx, name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddUser indicates an expected call of AddUser.
-func (mr *MockUserServiceMockRecorder) AddUser(name any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) AddUser(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUserService)(nil).AddUser), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUserService)(nil).AddUser), ctx, name)
 }
 
 // GetUserId mocks base method.
-func (m *MockUserService) GetUserId(id int) (models.User, error) {
+func (m *MockUserService) GetUserId(ctx *gofr.Context, id int) (models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserId", id)
+	ret := m.ctrl.Call(m, "GetUserId", ctx, id)
 	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserId indicates an expected call of GetUserId.
-func (mr *MockUserServiceMockRecorder) GetUserId(id any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) GetUserId(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserId", reflect.TypeOf((*MockUserService)(nil).GetUserId), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserId", reflect.TypeOf((*MockUserService)(nil).GetUserId), ctx, id)
 }
 
 // ViewTask mocks base method.
-func (m *MockUserService) ViewTask() (models.UserSlice, error) {
+func (m *MockUserService) ViewTask(ctx *gofr.Context) (models.UserSlice, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ViewTask")
+	ret := m.ctrl.Call(m, "ViewTask", ctx)
 	ret0, _ := ret[0].(models.UserSlice)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ViewTask indicates an expected call of ViewTask.
-func (mr *MockUserServiceMockRecorder) ViewTask() *gomock.Call {
+func (mr *MockUserServiceMockRecorder) ViewTask(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewTask", reflect.TypeOf((*MockUserService)(nil).ViewTask))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewTask", reflect.TypeOf((*MockUserService)(nil).ViewTask), ctx)
 }

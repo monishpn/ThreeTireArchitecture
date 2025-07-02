@@ -2,142 +2,245 @@ package user
 
 import (
 	"awesomeProject/models"
-	"bytes"
-	"encoding/json"
+	"context"
+	"errors"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/container"
+	gofrHttp "gofr.dev/pkg/gofr/http"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 )
 
 func TestAddUser(t *testing.T) {
-	testCases := []struct {
-		desc   string
-		input  string
-		ipErr  error
-		opCode int
-		opMsg  []byte
+	type gofrResponse struct {
+		result any
+		err    error
+	}
 
-		ifMock bool
+	mockContainer, _ := container.NewMockContainer(t)
+
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
+	}
+	tests := []struct {
+		name             string
+		user             string
+		requestBody      string
+		expectedResponse gofrResponse
+		ifMock           bool
 	}{
-		{"Normal Adding", `{   "name":"Ram"  }`, nil, http.StatusCreated, []byte("User Created"), true},
-		{"JSON error", "'{\"Ram\"}'", nil, http.StatusInternalServerError, []byte("Error Unmarshalling"), false},
-		{"Error Check", `{   "name":"Ram"  }`, models.CustomError{http.StatusInternalServerError, "Checking error"}, http.StatusInternalServerError, []byte("Checking error"), true},
+		{
+			name:        "Successful add User",
+			user:        "Tester",
+			requestBody: `{"name":"Tester"}`,
+			expectedResponse: gofrResponse{
+				result: "User Created",
+				err:    nil,
+			},
+			ifMock: true,
+		},
+		{
+			name:        "Failed Binding",
+			user:        "Testing",
+			requestBody: `{"Tester"}`,
+			expectedResponse: gofrResponse{
+				result: nil,
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Give Correct Input"}},
+			},
+			ifMock: false,
+		},
+		{
+			name:        "Check With Error",
+			user:        "Tester",
+			requestBody: `{"name":"Tester"}`,
+			expectedResponse: gofrResponse{
+				result: nil,
+				err:    errors.New("testing error"),
+			},
+			ifMock: true,
+		},
 	}
 
-	ctrl := gomock.NewController(t)
-	mockService := NewMockUserService(ctrl)
-	svc := New(mockService)
+	for i, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-	for _, tc := range testCases {
-		if tc.ifMock {
-			mockService.EXPECT().AddUser("Ram").Return(tc.ipErr)
-		}
+			ctrl := gomock.NewController(t)
+			mockService := NewMockUserService(ctrl)
+			svc := New(mockService)
 
-		req := httptest.NewRequest(http.MethodPost, "/user", strings.NewReader(tc.input))
+			req := httptest.NewRequest(http.MethodPost, "/user", strings.NewReader(tt.requestBody))
+			req.Header.Set("Content-Type", "application/json")
 
-		req.Header.Set("Content-Type", "application/json")
+			request := gofrHttp.NewRequest(req)
 
-		w := httptest.NewRecorder()
+			ctx.Request = request
 
-		svc.AddUser(w, req)
+			if tt.ifMock {
+				mockService.EXPECT().AddUser(ctx, tt.user).Return(tt.expectedResponse.err)
+			}
 
-		if w.Code != tc.opCode {
-			t.Errorf("%s: Expected response code %d, got %d", tc.desc, tc.opCode, w.Code)
-		}
+			val, err := svc.AddUser(ctx)
 
-		if w.Body.String() != string(tc.opMsg) {
-			t.Errorf("%s: Expected message %s, got %s", tc.desc, tc.opMsg, w.Body.String())
-		}
-	}
-}
+			response := gofrResponse{val, err}
 
-func TestGetUserByID(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockService := NewMockUserService(ctrl)
-	svc := New(mockService)
-
-	inp := models.User{1, "Ram"}
-	mockService.EXPECT().GetUserId(1).Return(inp, nil)
-	req := httptest.NewRequest(http.MethodGet, "/user/{id}", nil)
-	w := httptest.NewRecorder()
-
-	req.SetPathValue("id", "1")
-	svc.GetUserByID(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected response code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	if w.Body.String() != (inp.String()) {
-		t.Errorf("Expected message %s, got %s", inp.String(), w.Body.String())
-	}
-
-	// for error output
-	mockService.EXPECT().GetUserId(1).Return(models.User{}, models.CustomError{http.StatusInternalServerError, "Checking error"})
-	req = httptest.NewRequest(http.MethodGet, "/user/{id}", nil)
-	w = httptest.NewRecorder()
-
-	req.SetPathValue("id", "1")
-	svc.GetUserByID(w, req)
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("Expected response code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	if w.Body.String() != "Checking error" {
-		t.Errorf("Expected message Checking error, got %s", inp.String())
-	}
-
-	// Path value error
-	req = httptest.NewRequest(http.MethodGet, "/user/{id}", nil)
-	w = httptest.NewRecorder()
-
-	req.SetPathValue("id", "r")
-	svc.GetUserByID(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("Expected response code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	if w.Body.String() != "Invalid ID" {
-		t.Errorf("Expected message Invalid ID, got %s", w.Body.String())
+			assert.Equal(t, tt.expectedResponse, response, "TEST[%d], Failed.\n%s", i, tt.name)
+		})
 	}
 }
 
 func TestViewUser(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockService := NewMockUserService(ctrl)
-	svc := New(mockService)
-
-	inp := models.UserSlice{{1, "Ram"}, {2, "Shyam"}}
-	mockService.EXPECT().ViewTask().Return(inp, nil)
-	req := httptest.NewRequest(http.MethodGet, "/user/{id}", nil)
-	w := httptest.NewRecorder()
-	svc.Viewuser(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected response code %d, got %d", http.StatusOK, w.Code)
+	type gofrResponse struct {
+		result any
+		err    error
 	}
 
-	b, _ := json.Marshal(inp)
+	mockContainer, _ := container.NewMockContainer(t)
 
-	if !bytes.Equal(b, w.Body.Bytes()) {
-		t.Errorf("Expected message %v, got %v", b, w.Body.Bytes())
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
+	}
+	tests := []struct {
+		name    string
+		expResp gofrResponse
+		ifMock  bool
+	}{
+		{
+			name: "Successful view task",
+
+			expResp: gofrResponse{
+				result: models.UserSlice{
+					models.User{UserID: 1, Name: "Tester-1"},
+					models.User{UserID: 2, Name: "Tester-2"},
+				},
+				err: nil,
+			},
+			ifMock: true,
+		},
+		{
+			name: "Error Testing",
+			expResp: gofrResponse{
+				result: nil,
+				err:    errors.New("testing error"),
+			},
+			ifMock: true,
+		},
 	}
 
-	// for error output
-	mockService.EXPECT().ViewTask().Return(inp, models.CustomError{http.StatusInternalServerError, "Checking error"})
-	req = httptest.NewRequest(http.MethodGet, "/user/{id}", nil)
-	w = httptest.NewRecorder()
-	svc.Viewuser(w, req)
+	for i, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("Expected response code %d, got %d", http.StatusOK, w.Code)
+			ctrl := gomock.NewController(t)
+			mockService := NewMockUserService(ctrl)
+			svc := New(mockService)
+
+			req := httptest.NewRequest(http.MethodGet, "/user", http.NoBody)
+			req.Header.Set("Content-Type", "application/json")
+
+			request := gofrHttp.NewRequest(req)
+
+			ctx.Request = request
+
+			if tt.ifMock {
+				mockService.EXPECT().ViewTask(ctx).Return(tt.expResp.result, tt.expResp.err)
+			}
+
+			val, err := svc.Viewuser(ctx)
+
+			response := gofrResponse{val, err}
+
+			assert.Equal(t, tt.expResp, response, "TEST[%d], Failed.\n%s", i, tt.name)
+		})
+	}
+}
+
+func TestGetByID(t *testing.T) {
+	type gofrResponse struct {
+		result any
+		err    error
 	}
 
-	if w.Body.String() != "Checking error" {
-		t.Errorf("Expected message Checking error, got %s", w.Body.String())
+	mockContainer, _ := container.NewMockContainer(t)
+
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
+	}
+	tests := []struct {
+		name        string
+		requestBody string
+		expResp     gofrResponse
+		ifMock      bool
+	}{
+		{
+			name:        "Successful GetByID task",
+			requestBody: "1",
+			expResp: gofrResponse{
+				result: models.User{UserID: 1, Name: "Tester-1"},
+				err:    nil,
+			},
+			ifMock: true,
+		},
+		{
+			name:        "Error GetByID task",
+			requestBody: "1",
+			expResp: gofrResponse{
+				result: models.User{},
+				err:    errors.New("testing error"),
+			},
+			ifMock: true,
+		},
+		{
+			name:        "Testing strconv error",
+			requestBody: "r",
+			expResp: gofrResponse{
+				result: nil,
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}},
+			},
+			ifMock: false,
+		},
+	}
+
+	for i, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			mockService := NewMockUserService(ctrl)
+			svc := New(mockService)
+
+			req := httptest.NewRequest(http.MethodGet, "/task/{id}", http.NoBody)
+			req.Header.Set("Content-Type", "application/json")
+			req = mux.SetURLVars(req, map[string]string{ //working
+				"id": tt.requestBody,
+			})
+
+			//req.SetPathValue("id", tt.requestBody) // not working
+
+			request := gofrHttp.NewRequest(req)
+
+			ctx.Request = request
+
+			id, err := strconv.Atoi(tt.requestBody)
+
+			if tt.ifMock {
+				mockService.EXPECT().GetUserId(ctx, id).Return(tt.expResp.result, tt.expResp.err)
+			}
+
+			val, err := svc.GetUserByID(ctx)
+
+			response := gofrResponse{val, err}
+
+			assert.Equal(t, tt.expResp, response, "TEST[%d], Failed.\n%s", i, tt.name)
+		})
 	}
 }

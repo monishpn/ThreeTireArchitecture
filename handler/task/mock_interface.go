@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
+	gofr "gofr.dev/pkg/gofr"
 )
 
 // MockTaskService is a mock of TaskService interface.
@@ -41,75 +42,75 @@ func (m *MockTaskService) EXPECT() *MockTaskServiceMockRecorder {
 }
 
 // AddTask mocks base method.
-func (m *MockTaskService) AddTask(task string, uid int) error {
+func (m *MockTaskService) AddTask(ctx *gofr.Context, task string, uid int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddTask", task, uid)
+	ret := m.ctrl.Call(m, "AddTask", ctx, task, uid)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddTask indicates an expected call of AddTask.
-func (mr *MockTaskServiceMockRecorder) AddTask(task, uid any) *gomock.Call {
+func (mr *MockTaskServiceMockRecorder) AddTask(ctx, task, uid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTask", reflect.TypeOf((*MockTaskService)(nil).AddTask), task, uid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTask", reflect.TypeOf((*MockTaskService)(nil).AddTask), ctx, task, uid)
 }
 
 // DeleteTask mocks base method.
-func (m *MockTaskService) DeleteTask(id int) (bool, error) {
+func (m *MockTaskService) DeleteTask(ctx *gofr.Context, id int) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTask", id)
+	ret := m.ctrl.Call(m, "DeleteTask", ctx, id)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DeleteTask indicates an expected call of DeleteTask.
-func (mr *MockTaskServiceMockRecorder) DeleteTask(id any) *gomock.Call {
+func (mr *MockTaskServiceMockRecorder) DeleteTask(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTask", reflect.TypeOf((*MockTaskService)(nil).DeleteTask), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTask", reflect.TypeOf((*MockTaskService)(nil).DeleteTask), ctx, id)
 }
 
 // GetByID mocks base method.
-func (m *MockTaskService) GetByID(id int) (models.Tasks, error) {
+func (m *MockTaskService) GetByID(ctx *gofr.Context, id int) (models.Tasks, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", id)
+	ret := m.ctrl.Call(m, "GetByID", ctx, id)
 	ret0, _ := ret[0].(models.Tasks)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockTaskServiceMockRecorder) GetByID(id any) *gomock.Call {
+func (mr *MockTaskServiceMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockTaskService)(nil).GetByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockTaskService)(nil).GetByID), ctx, id)
 }
 
 // UpdateTask mocks base method.
-func (m *MockTaskService) UpdateTask(id int) (bool, error) {
+func (m *MockTaskService) UpdateTask(ctx *gofr.Context, id int) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateTask", id)
+	ret := m.ctrl.Call(m, "UpdateTask", ctx, id)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateTask indicates an expected call of UpdateTask.
-func (mr *MockTaskServiceMockRecorder) UpdateTask(id any) *gomock.Call {
+func (mr *MockTaskServiceMockRecorder) UpdateTask(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTask", reflect.TypeOf((*MockTaskService)(nil).UpdateTask), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTask", reflect.TypeOf((*MockTaskService)(nil).UpdateTask), ctx, id)
 }
 
 // ViewTask mocks base method.
-func (m *MockTaskService) ViewTask() ([]models.Tasks, error) {
+func (m *MockTaskService) ViewTask(ctx *gofr.Context) ([]models.Tasks, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ViewTask")
+	ret := m.ctrl.Call(m, "ViewTask", ctx)
 	ret0, _ := ret[0].([]models.Tasks)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ViewTask indicates an expected call of ViewTask.
-func (mr *MockTaskServiceMockRecorder) ViewTask() *gomock.Call {
+func (mr *MockTaskServiceMockRecorder) ViewTask(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewTask", reflect.TypeOf((*MockTaskService)(nil).ViewTask))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewTask", reflect.TypeOf((*MockTaskService)(nil).ViewTask), ctx)
 }

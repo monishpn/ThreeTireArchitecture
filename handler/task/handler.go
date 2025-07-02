@@ -3,6 +3,7 @@ package task
 import (
 	Models "awesomeProject/models"
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/http"
 	"strconv"
 )
 
@@ -32,7 +33,7 @@ func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
 
 	err := ctx.Bind(&reqBody)
 	if err != nil {
-		return nil, err
+		return nil, http.ErrorInvalidParam{Params: []string{"Give Correct Input"}}
 	}
 
 	err = h.service.AddTask(ctx, reqBody.Task, reqBody.UserID)
@@ -75,12 +76,12 @@ func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, err
+		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
 	ans, err := h.service.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return Models.Tasks{}, err
 	}
 
 	return ans, nil
@@ -99,7 +100,7 @@ func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, err
+		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 	_, err = h.service.UpdateTask(ctx, id)
 
@@ -124,7 +125,7 @@ func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
 
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, err
+		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
 	_, err = h.service.DeleteTask(ctx, id)
