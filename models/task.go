@@ -3,10 +3,15 @@ package models
 import "fmt"
 
 type Tasks struct {
-	Tid       int
-	Task      string
-	Completed bool
-	UserID    int
+	Tid       int    `json:"tid"`
+	Task      string `json:"task"`
+	Completed bool   `json:"completed"`
+	UserID    int    `json:"uid"`
+}
+
+type AddTaskRequest struct {
+	Task   string `json:"task"`
+	UserID int    `json:"userID"`
 }
 
 func (t Tasks) String() string {

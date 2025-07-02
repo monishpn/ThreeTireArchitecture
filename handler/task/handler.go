@@ -2,163 +2,135 @@ package task
 
 import (
 	Models "awesomeProject/models"
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
+	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/http"
 	"strconv"
 )
-
-type TaskService interface {
-	AddTask(task string, uid int) error
-	ViewTask() ([]Models.Tasks, error)
-	GetByID(id int) (Models.Tasks, error)
-	UpdateTask(id int) (bool, error)
-	DeleteTask(id int) (bool, error)
-}
 
 type Handler struct {
 	service TaskService
 }
 
-// New creates a new task handler
+// New creates a new task handler.
 func New(service TaskService) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) Addtask(w http.ResponseWriter, r *http.Request) {
+// Addtask godoc
+// @Summary Add a new task
+// @Description Adds a task to the database for a given user
+// @Tags task
+// @Accept json
+// @Produce plain
+// @Param task body Models.AddTaskRequest true "Task input"
+// @Success 201 {string} string "Task added"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /task [post]
+func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
+	var reqBody Models.AddTaskRequest
 
-	defer r.Body.Close()
-
-	msg, err := io.ReadAll(r.Body)
+	err := ctx.Bind(&reqBody)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-		return
+		return nil, http.ErrorInvalidParam{Params: []string{"Give Correct Input"}}
 	}
 
-	var reqBody struct {
-		T string `json:"task"`
-		U int    `json:"userID"`
-	}
-
-	err = json.Unmarshal(msg, &reqBody)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-		return
-	}
-
-	err = h.service.AddTask(reqBody.T, reqBody.U)
+	err = h.service.AddTask(ctx, reqBody.Task, reqBody.UserID)
 
 	if err != nil {
-		cErr := err.(Models.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
+		return nil, err
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Task added"))
-	return
-
+	return "Task added", nil
 }
 
-func (h *Handler) Viewtask(w http.ResponseWriter, r *http.Request) {
-	ans, err := h.service.ViewTask()
+// Viewtask godoc
+// @Summary View all tasks
+// @Description Returns a list of all tasks
+// @Tags task
+// @Produce json
+// @Success 200 {array} Models.Tasks
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /task [get]
+func (h *Handler) Viewtask(ctx *gofr.Context) (any, error) {
+	ans, err := h.service.ViewTask(ctx)
 	if err != nil {
-		cErr := err.(Models.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
+		return nil, err
 	}
-	b, _ := json.Marshal(ans)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	return ans, nil
 }
 
-func (h *Handler) Gettask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	index, err := strconv.Atoi(r.PathValue("id"))
-
+// Gettask godoc
+// @Summary Get task by ID
+// @Description Retrieves task details by ID
+// @Tags task
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {string} string "Task details"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 404 {string} string "Not Found"
+// @Router /task/{id} [get]
+func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		log.Printf("%s", err.Error())
-
-		return
+		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
-	var ans Models.Tasks
-
-	ans, err = h.service.GetByID(index)
+	ans, err := h.service.GetByID(ctx, id)
 	if err != nil {
-		cErr := err.(Models.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
+		return Models.Tasks{}, err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(ans.String()))
+	return ans, nil
 }
 
-func (h *Handler) Updatetask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	index, err := strconv.Atoi(r.PathValue("id"))
+// Updatetask godoc
+// @Summary Update task status
+// @Description Updates task status to complete/incomplete
+// @Tags task
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {string} string "Task updated"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 404 {string} string "Not Found"
+// @Router /task/{id} [put]
+func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-
-		return
+		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
-	var ans bool
-	ans, err = h.service.UpdateTask(index)
+	_, err = h.service.UpdateTask(ctx, id)
+
 	if err != nil {
-		cErr := err.(Models.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
+		return nil, err
 	}
-	if ans {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Task updated"))
-	}
+
+	return "Task updated", nil
 }
 
-func (h *Handler) Deletetask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	index, err := strconv.Atoi(r.PathValue("id"))
+// Deletetask godoc
+// @Summary Delete task
+// @Description Deletes a task by its ID
+// @Tags task
+// @Produce plain
+// @Param id path int true "Task ID"
+// @Success 200 {string} string "Task deleted"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 404 {string} string "Not Found"
+// @Router /task/{id} [delete]
+func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("%s", err.Error())
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-
-		return
+		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
-	var ans bool
-	ans, err = h.service.DeleteTask(index)
+	_, err = h.service.DeleteTask(ctx, id)
+
 	if err != nil {
-		cErr := err.(Models.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
+		return nil, err
 	}
-	if ans {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Task deleted"))
 
-	}
+	return "Task deleted", nil
 }

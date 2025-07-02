@@ -2,16 +2,9 @@ package user
 
 import (
 	Model "awesomeProject/models"
+	"gofr.dev/pkg/gofr"
 	"net/http"
 )
-
-type UserStore interface {
-	AddUser(name string) error
-	GetUserByID(id int) (Model.User, error)
-	ViewUser() ([]Model.User, error)
-	CheckUserID(id int) bool
-	CheckIfRowsExists() bool
-}
 
 type Service struct {
 	store UserStore
@@ -23,31 +16,30 @@ func New(store UserStore) *Service {
 	}
 }
 
-func (s *Service) AddUser(name string) error {
+func (s *Service) AddUser(ctx *gofr.Context, name string) error {
 	if name == "" {
 		return Model.CustomError{http.StatusBadRequest, "Empty String given as input"}
 	}
-	return s.store.AddUser(name)
+
+	return s.store.AddUser(ctx, name)
 }
 
-func (s *Service) ViewTask() (Model.UserSlice, error) {
-	if s.store.CheckIfRowsExists() {
-		return s.store.ViewUser()
+func (s *Service) ViewTask(ctx *gofr.Context) (Model.UserSlice, error) {
+	if s.store.CheckIfRowsExists(ctx) {
+		return s.store.ViewUser(ctx)
 	}
 
 	return Model.UserSlice{}, Model.CustomError{http.StatusNoContent, "No user Found"}
-
 }
 
-func (s Service) GetUserId(id int) (Model.User, error) {
-	if s.CheckUserID(id) {
-		return s.store.GetUserByID(id)
+func (s Service) GetUserId(ctx *gofr.Context, id int) (Model.User, error) {
+	if s.CheckUserID(ctx, id) {
+		return s.store.GetUserByID(ctx, id)
 	}
 
 	return Model.User{}, Model.CustomError{Code: http.StatusNotFound, Message: "user does not exists"}
 }
 
-func (s Service) CheckUserID(id int) bool {
-
-	return s.store.CheckUserID(id)
+func (s Service) CheckUserID(ctx *gofr.Context, id int) bool {
+	return s.store.CheckUserID(ctx, id)
 }
