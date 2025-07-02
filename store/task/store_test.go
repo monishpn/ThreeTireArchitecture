@@ -2,7 +2,6 @@ package task
 
 import (
 	Models "awesomeProject/models"
-	"context"
 	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"gofr.dev/pkg/gofr"
@@ -15,7 +14,7 @@ func TestViewTask(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -37,7 +36,6 @@ func TestViewTask(t *testing.T) {
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select * from TASKS").
 					WillReturnRows(rows)
-
 			},
 			expAns: []Models.Tasks{
 				Models.Tasks{Tid: 1, Task: "Testing-1", Completed: false, UserID: 1},
@@ -72,17 +70,15 @@ func TestViewTask(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestAddTask(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -128,17 +124,15 @@ func TestAddTask(t *testing.T) {
 			if !assert.Equal(t, tt.err, err) {
 				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
 			}
-
 		})
 	}
-
 }
 
 func TestGetByIDTask(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -160,7 +154,6 @@ func TestGetByIDTask(t *testing.T) {
 				mock.SQL.ExpectQuery("select * from TASKS where id=?").
 					WithArgs(1).
 					WillReturnRows(rows)
-
 			},
 			expAns: Models.Tasks{Tid: 1, Task: "Testing", UserID: 1},
 			err:    nil,
@@ -192,17 +185,15 @@ func TestGetByIDTask(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestUpdateTask(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -221,7 +212,6 @@ func TestUpdateTask(t *testing.T) {
 				mock.SQL.ExpectExec("UPDATE TASKS SET completed= true WHERE id=?").
 					WithArgs(1).
 					WillReturnResult(mock.SQL.NewResult(0, 1))
-
 			},
 			expAns: true,
 			err:    nil,
@@ -253,17 +243,15 @@ func TestUpdateTask(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestDeleteTask(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -282,7 +270,6 @@ func TestDeleteTask(t *testing.T) {
 				mock.SQL.ExpectExec("delete from TASKS where id=?").
 					WithArgs(1).
 					WillReturnResult(mock.SQL.NewResult(0, 1))
-
 			},
 			expAns: true,
 			err:    nil,
@@ -314,17 +301,15 @@ func TestDeleteTask(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestCheckTask(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -345,7 +330,6 @@ func TestCheckTask(t *testing.T) {
 				mock.SQL.ExpectQuery("select id from TASKS where id=?").
 					WithArgs(1).
 					WillReturnRows(rows)
-
 			},
 			expAns: true,
 		},
@@ -356,7 +340,6 @@ func TestCheckTask(t *testing.T) {
 				mock.SQL.ExpectQuery("select id from TASKS where id=?").
 					WithArgs(1).
 					WillReturnRows(rows)
-
 			},
 			expAns: false,
 		},
@@ -383,8 +366,6 @@ func TestCheckTask(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }

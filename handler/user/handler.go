@@ -16,7 +16,6 @@ func New(service UserService) *handler {
 }
 
 func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
-
 	var reqBody Model.Input
 
 	err := ctx.Bind(&reqBody)
@@ -33,7 +32,6 @@ func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
 }
 
 func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
-
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
 		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}}

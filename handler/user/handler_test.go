@@ -2,7 +2,6 @@ package user
 
 import (
 	"awesomeProject/models"
-	"context"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +25,7 @@ func TestAddUser(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -71,7 +70,6 @@ func TestAddUser(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockUserService(ctrl)
 			svc := New(mockService)
@@ -105,7 +103,7 @@ func TestViewUser(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -138,7 +136,6 @@ func TestViewUser(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockUserService(ctrl)
 			svc := New(mockService)
@@ -172,7 +169,7 @@ func TestGetByID(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -213,7 +210,6 @@ func TestGetByID(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockUserService(ctrl)
 			svc := New(mockService)

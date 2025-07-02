@@ -15,6 +15,7 @@ import (
 	"awesomeProject/datasource"
 	_ "awesomeProject/docs"
 	Thandler "awesomeProject/handler/task"
+	"awesomeProject/migrations/migrations"
 	Tservice "awesomeProject/services/task"
 	Tstore "awesomeProject/store/task"
 	"gofr.dev/pkg/gofr"
@@ -26,7 +27,6 @@ import (
 )
 
 func main() {
-
 	db, err := datasource.New("root:root123@tcp(localhost:3306)/test_db")
 	if err != nil {
 		log.Println(err)
@@ -34,6 +34,7 @@ func main() {
 	}
 
 	app := gofr.New()
+	app.Migrate(migrations.All())
 
 	userStore := Ustore.New(db)
 	userSvc := Uservice.New(userStore)

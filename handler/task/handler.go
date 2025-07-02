@@ -28,7 +28,6 @@ func New(service TaskService) *Handler {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /task [post]
 func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
-
 	var reqBody Models.AddTaskRequest
 
 	err := ctx.Bind(&reqBody)
@@ -73,7 +72,6 @@ func (h *Handler) Viewtask(ctx *gofr.Context) (any, error) {
 // @Failure 404 {string} string "Not Found"
 // @Router /task/{id} [get]
 func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
-
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
 		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
@@ -102,6 +100,7 @@ func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 	if err != nil {
 		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
+
 	_, err = h.service.UpdateTask(ctx, id)
 
 	if err != nil {
@@ -122,7 +121,6 @@ func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 // @Failure 404 {string} string "Not Found"
 // @Router /task/{id} [delete]
 func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
-
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
 		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}

@@ -2,7 +2,6 @@ package user
 
 import (
 	Models "awesomeProject/models"
-	"context"
 	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"gofr.dev/pkg/gofr"
@@ -15,7 +14,7 @@ func TestAddUser(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -58,17 +57,15 @@ func TestAddUser(t *testing.T) {
 			if !assert.Equal(t, tt.err, err) {
 				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
 			}
-
 		})
 	}
-
 }
 
 func TestViewUser(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -88,7 +85,6 @@ func TestViewUser(t *testing.T) {
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("Select * from USERS").
 					WillReturnRows(rows)
-
 			},
 			expAns: []Models.User{
 				Models.User{UserID: 1, Name: "Tester-1"},
@@ -122,17 +118,15 @@ func TestViewUser(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestGetByIDUser(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -142,26 +136,25 @@ func TestGetByIDUser(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		Uid      int
+		UID      int
 		mockfunc func()
 		expAns   Models.User
 		err      error
 	}{
 		{
 			name: "Successful GetByID user",
-			Uid:  1,
+			UID:  1,
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select * from USERS where uid=?").
 					WithArgs(1).
 					WillReturnRows(rows)
-
 			},
 			expAns: Models.User{UserID: 1, Name: "Tester-1"},
 			err:    nil,
 		},
 		{
 			name: "Failed add task",
-			Uid:  1,
+			UID:  1,
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select * from USERS").
 					WithArgs(1).
@@ -178,7 +171,7 @@ func TestGetByIDUser(t *testing.T) {
 			var db *sql.DB
 			svc := New(db)
 
-			ans, err := svc.GetUserByID(ctx, tt.Uid)
+			ans, err := svc.GetUserByID(ctx, tt.UID)
 			if !assert.Equal(t, tt.err, err) {
 				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
 			}
@@ -186,17 +179,15 @@ func TestGetByIDUser(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestCheckIDUser(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -206,33 +197,31 @@ func TestCheckIDUser(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		Uid      int
+		UID      int
 		mockfunc func()
 		expAns   bool
 	}{
 		{
 			name: "Successful Check user",
-			Uid:  1,
+			UID:  1,
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select uid from USERS where uid=?").
 					WithArgs(1).WillReturnRows(rows)
-
 			},
 			expAns: true,
 		},
 		{
 			name: "EmptyRowCheck",
-			Uid:  1,
+			UID:  1,
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select uid from USERS where uid=?").
 					WithArgs(1).WillReturnRows(rows)
-
 			},
 			expAns: false,
 		},
 		{
 			name: "Failed Check task",
-			Uid:  1,
+			UID:  1,
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select uid from USERS").
 					WithArgs(1).WillReturnRows(rows)
@@ -240,7 +229,7 @@ func TestCheckIDUser(t *testing.T) {
 			expAns: false,
 		}, {
 			name: "Check Empty",
-			Uid:  1,
+			UID:  1,
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("select uid from USERS where uid=?").
 					WithArgs(1).
@@ -256,22 +245,20 @@ func TestCheckIDUser(t *testing.T) {
 			var db *sql.DB
 			svc := New(db)
 
-			ans := svc.CheckUserID(ctx, tt.Uid)
+			ans := svc.CheckUserID(ctx, tt.UID)
 
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }
 
 func TestCheckRowUser(t *testing.T) {
 	mockContainer, mock := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -289,7 +276,6 @@ func TestCheckRowUser(t *testing.T) {
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("Select COUNT(*) from USERS").
 					WillReturnRows(rows)
-
 			},
 			expAns: true,
 		},
@@ -298,7 +284,6 @@ func TestCheckRowUser(t *testing.T) {
 			mockfunc: func() {
 				mock.SQL.ExpectQuery("Select COUNT(*) from USERS").
 					WillReturnRows(rows)
-
 			},
 			expAns: false,
 		},
@@ -323,8 +308,6 @@ func TestCheckRowUser(t *testing.T) {
 			if !assert.Equal(t, tt.expAns, ans) {
 				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
-
 		})
 	}
-
 }

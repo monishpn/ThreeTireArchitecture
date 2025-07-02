@@ -2,7 +2,6 @@ package task
 
 import (
 	"awesomeProject/models"
-	"context"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +25,7 @@ func TestAddTask(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -75,7 +74,6 @@ func TestAddTask(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockTaskService(ctrl)
 			svc := New(mockService)
@@ -109,7 +107,7 @@ func TestViewTask(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -142,7 +140,6 @@ func TestViewTask(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockTaskService(ctrl)
 			svc := New(mockService)
@@ -176,7 +173,7 @@ func TestGetByID(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -217,7 +214,6 @@ func TestGetByID(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockTaskService(ctrl)
 			svc := New(mockService)
@@ -258,7 +254,7 @@ func TestUpdate(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -299,7 +295,6 @@ func TestUpdate(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockTaskService(ctrl)
 			svc := New(mockService)
@@ -340,7 +335,7 @@ func TestDelete(t *testing.T) {
 	mockContainer, _ := container.NewMockContainer(t)
 
 	ctx := &gofr.Context{
-		Context:   context.Background(),
+		Context:   t.Context(),
 		Request:   nil,
 		Container: mockContainer,
 	}
@@ -382,7 +377,6 @@ func TestDelete(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			mockService := NewMockTaskService(ctrl)
 			svc := New(mockService)

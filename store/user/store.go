@@ -88,10 +88,12 @@ func (s *Store) CheckUserID(ctx *gofr.Context, id int) bool {
 func (s *Store) CheckIfRowsExists(ctx *gofr.Context) bool {
 	var num int
 	err := ctx.SQL.QueryRowContext(ctx, "Select COUNT(*) from USERS").Scan(&num)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false
 		}
+
 		return false
 	}
 
