@@ -48,7 +48,7 @@ func (s *Store) ViewUser(ctx *gofr.Context) ([]Models.User, error) {
 	row, err := ctx.SQL.QueryContext(ctx, "Select * from USERS")
 
 	if err != nil {
-		return users, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
+		return []Models.User{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
 	}
 
 	defer row.Close()
@@ -92,6 +92,7 @@ func (s *Store) CheckIfRowsExists(ctx *gofr.Context) bool {
 		if err == sql.ErrNoRows {
 			return false
 		}
+		return false
 	}
 
 	return num > 0

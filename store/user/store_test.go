@@ -1,156 +1,330 @@
 package user
 
 import (
+	Models "awesomeProject/models"
+	"context"
 	"database/sql"
-	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
+	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/container"
+	"net/http"
 	"testing"
 )
 
-func mockAllocation(t *testing.T) (*sql.DB, sqlmock.Sqlmock, error) {
-	t.Helper()
-
-	return sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-}
 func TestAddUser(t *testing.T) {
-	db, mock, err := mockAllocation(t)
-	if err != nil {
-		t.Errorf("Error while establishing SQLmock : %v", err)
+	mockContainer, mock := container.NewMockContainer(t)
+
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	defer db.Close()
-	svc := New(db)
+	tests := []struct {
+		name     string
+		user     string
+		mockfunc func()
+		err      error
+	}{
+		{
+			name: "Successful add user",
+			user: "Tester",
+			mockfunc: func() {
+				mock.SQL.ExpectExec("insert into USERS (name) values (?)").
+					WithArgs("Tester").
+					WillReturnResult(mock.SQL.NewResult(1, 1))
+			},
+			err: nil,
+		},
+		{
+			name: "Failed add user",
+			user: "Tester",
+			mockfunc: func() {
+				mock.SQL.ExpectExec("insert into Users (name) values (?)").
+					WithArgs("Tester").
+					WillReturnResult(mock.SQL.NewResult(1, 1))
+			},
+			err: Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
 
-	mock.ExpectExec("insert into USERS (name) values (?) ").WithArgs("Ram").WillReturnResult(sqlmock.NewResult(1, 1))
+			var db *sql.DB
+			svc := New(db)
 
-	err = svc.AddUser("Ram")
+			err := svc.AddUser(ctx, tt.user)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
 
-	if err != nil {
-		t.Errorf("Error while adding data : %v", err)
+		})
 	}
 
-	err = mock.ExpectationsWereMet()
-	if err != nil {
-		t.Errorf("Failed AddUser : %v", err)
-	}
-
-	// Errors Check
-	mock.ExpectExec("insert into USERS (id) values (?) ").WithArgs("Ram").WillReturnResult(sqlmock.NewResult(0, 0))
-
-	err = svc.AddUser("Ram")
-	if err == nil {
-		t.Errorf("Expected Error, but dint get one ")
-	}
-}
-
-func TestGetUserByID(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-
-	defer db.Close()
-
-	rows := sqlmock.NewRows([]string{"uid", "name"}).AddRow(1, "Ram")
-
-	mock.ExpectQuery("select * from USERS where uid=?").WillReturnRows(rows)
-
-	svc := New(db)
-
-	_, err := svc.GetUserByID(1)
-	if err != nil {
-		t.Errorf("Error with database addition in GetUserByID : %v", err)
-	}
-
-	err = mock.ExpectationsWereMet()
-
-	if err != nil {
-		t.Errorf("Failed GetUserByID : %v", err)
-	}
-
-	// Error Check
-	mock.ExpectQuery("select * from USERS where uid").WillReturnRows(rows)
-
-	_, err = svc.GetUserByID(1)
-
-	if err == nil {
-		t.Errorf("Expected Error but got none")
-	}
 }
 
 func TestViewUser(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
+	mockContainer, mock := container.NewMockContainer(t)
 
-	defer db.Close()
-
-	rows := sqlmock.NewRows([]string{"uid", "name"}).AddRow(1, "Ram").AddRow(2, "Shyam")
-
-	mock.ExpectQuery("Select * from USERS").WillReturnRows(rows)
-
-	svc := New(db)
-
-	_, err := svc.ViewUser()
-	if err != nil {
-		t.Errorf("Error with database addition in GetUserByID : %v", err)
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	err = mock.ExpectationsWereMet()
+	rows := mock.SQL.NewRows([]string{"id", "user"}).
+		AddRow(1, "Tester-1").
+		AddRow(2, "Tester-2")
 
-	if err != nil {
-		t.Errorf("Failed ViewUser : %v", err)
+	tests := []struct {
+		name     string
+		mockfunc func()
+		expAns   []Models.User
+		err      error
+	}{
+		{
+			name: "Successful View user",
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("Select * from USERS").
+					WillReturnRows(rows)
+
+			},
+			expAns: []Models.User{
+				Models.User{UserID: 1, Name: "Tester-1"},
+				Models.User{UserID: 2, Name: "Tester-2"},
+			},
+			err: nil,
+		},
+		{
+			name: "Failed View user",
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from Tasks").
+					WithArgs(1).
+					WillReturnRows(rows)
+			},
+			expAns: []Models.User{},
+			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans, err := svc.ViewUser(ctx)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
 	}
 
-	// Error Check
-	mock.ExpectQuery("Select * from User").WillReturnRows(rows)
-
-	_, err = svc.ViewUser()
-
-	if err == nil {
-		t.Errorf("Expected error but got none")
-	}
 }
 
-func TestCheckUserID(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
+func TestGetByIDUser(t *testing.T) {
+	mockContainer, mock := container.NewMockContainer(t)
 
-	defer db.Close()
-
-	rows := sqlmock.NewRows([]string{"uid"}).AddRow("Ram")
-	mock.ExpectQuery("select uid from USERS where uid=?").WithArgs(1).WillReturnRows(rows)
-
-	svc := New(db)
-
-	// Error Check - No Rows
-	errRow := sqlmock.NewRows([]string{})
-	mock.ExpectQuery("select uid from USERS where uid=?").WithArgs(1).WillReturnRows(errRow)
-
-	ans := svc.CheckUserID(1)
-	if ans {
-		t.Errorf("Expected False but got true")
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	// Error Check
+	rows := mock.SQL.NewRows([]string{"id", "user"}).
+		AddRow(1, "Tester-1")
 
-	mock.ExpectQuery("select name from USERS where uid=?").WithArgs(1).WillReturnRows(errRow)
+	tests := []struct {
+		name     string
+		Uid      int
+		mockfunc func()
+		expAns   Models.User
+		err      error
+	}{
+		{
+			name: "Successful GetByID user",
+			Uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from USERS where uid=?").
+					WithArgs(1).
+					WillReturnRows(rows)
 
-	ans = svc.CheckUserID(1)
-
-	if ans {
-		t.Errorf("Expected Error")
+			},
+			expAns: Models.User{UserID: 1, Name: "Tester-1"},
+			err:    nil,
+		},
+		{
+			name: "Failed add task",
+			Uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from USERS").
+					WithArgs(1).
+					WillReturnRows(rows)
+			},
+			expAns: Models.User{},
+			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+		},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans, err := svc.GetUserByID(ctx, tt.Uid)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
+	}
+
 }
 
-func TestCheckIfRowsExists(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
+func TestCheckIDUser(t *testing.T) {
+	mockContainer, mock := container.NewMockContainer(t)
 
-	defer db.Close()
-
-	rows := sqlmock.NewRows([]string{"bum"}).AddRow(1)
-
-	mock.ExpectQuery("Select COUNT(*) from USERS").WillReturnRows(rows)
-
-	svc := New(db)
-
-	_ = svc.CheckIfRowsExists()
-
-	err := mock.ExpectationsWereMet()
-	if err != nil {
-		t.Errorf("Failed CheckIfRowsExists : %v", err)
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
+
+	rows := mock.SQL.NewRows([]string{"id"}).AddRow(1)
+	empRow := mock.SQL.NewRows([]string{"id"})
+
+	tests := []struct {
+		name     string
+		Uid      int
+		mockfunc func()
+		expAns   bool
+	}{
+		{
+			name: "Successful Check user",
+			Uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select uid from USERS where uid=?").
+					WithArgs(1).WillReturnRows(rows)
+
+			},
+			expAns: true,
+		},
+		{
+			name: "EmptyRowCheck",
+			Uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select uid from USERS where uid=?").
+					WithArgs(1).WillReturnRows(rows)
+
+			},
+			expAns: false,
+		},
+		{
+			name: "Failed Check task",
+			Uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select uid from USERS").
+					WithArgs(1).WillReturnRows(rows)
+			},
+			expAns: false,
+		}, {
+			name: "Check Empty",
+			Uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select uid from USERS where uid=?").
+					WithArgs(1).
+					WillReturnRows(empRow)
+			},
+			expAns: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans := svc.CheckUserID(ctx, tt.Uid)
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
+	}
+
+}
+
+func TestCheckRowUser(t *testing.T) {
+	mockContainer, mock := container.NewMockContainer(t)
+
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
+	}
+
+	rows := mock.SQL.NewRows([]string{"COUNT"}).
+		AddRow(1)
+
+	tests := []struct {
+		name     string
+		mockfunc func()
+		expAns   bool
+	}{
+		{
+			name: "Successful CheckRow user",
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("Select COUNT(*) from USERS").
+					WillReturnRows(rows)
+
+			},
+			expAns: true,
+		},
+		{
+			name: "Empty Row Check",
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("Select COUNT(*) from USERS").
+					WillReturnRows(rows)
+
+			},
+			expAns: false,
+		},
+		{
+			name: "Failed Check Row user",
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("Select COUNT(*) from Users").
+					WillReturnRows(rows)
+			},
+			expAns: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans := svc.CheckIfRowsExists(ctx)
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
+	}
+
 }

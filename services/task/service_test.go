@@ -4,6 +4,7 @@ import (
 	"awesomeProject/models"
 	"errors"
 	"go.uber.org/mock/gomock"
+	"gofr.dev/pkg/gofr"
 	"net/http"
 	"reflect"
 	"testing"
@@ -29,16 +30,18 @@ func TestAddTask(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
 		if test.ifMock {
-			mockUserService.EXPECT().CheckUserID(test.uid).Return(test.ifUser)
+			mockUserService.EXPECT().CheckUserID(ctx, test.uid).Return(test.ifUser)
 
 			if test.ifUser {
-				mockTaskStore.EXPECT().AddTask(test.task, test.uid).Return(test.expErr)
+				mockTaskStore.EXPECT().AddTask(ctx, test.task, test.uid).Return(test.expErr)
 			}
 		}
 
-		err := svc.AddTask(test.task, test.uid)
+		err := svc.AddTask(ctx, test.task, test.uid)
 
 		if !errors.Is(test.expErr, err) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.expErr, err)
@@ -59,8 +62,10 @@ func TestView(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
-	mockTaskStore.EXPECT().ViewTask().Return(exp, nil)
-	op, err := svc.ViewTask()
+	ctx := &gofr.Context{}
+
+	mockTaskStore.EXPECT().ViewTask(ctx).Return(exp, nil)
+	op, err := svc.ViewTask(ctx)
 
 	if err != nil {
 		t.Errorf("%v.ViewTask(): expected no error, but got %v", t.Name(), err)
@@ -89,14 +94,16 @@ func TestGetByID(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
-		mockTaskStore.EXPECT().CheckIfExists(test.Tid).Return(test.ifExists)
+		mockTaskStore.EXPECT().CheckIfExists(ctx, test.Tid).Return(test.ifExists)
 
 		if test.ifMock {
-			mockTaskStore.EXPECT().GetByID(test.Tid).Return(test.exp, test.expErr)
+			mockTaskStore.EXPECT().GetByID(ctx, test.Tid).Return(test.exp, test.expErr)
 		}
 
-		op, err := svc.GetByID(test.Tid)
+		op, err := svc.GetByID(ctx, test.Tid)
 
 		if !errors.Is(test.expErr, err) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.expErr, err)
@@ -126,14 +133,16 @@ func TestUpdateTask(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
-		mockTaskStore.EXPECT().CheckIfExists(test.Tid).Return(test.ifExists)
+		mockTaskStore.EXPECT().CheckIfExists(ctx, test.Tid).Return(test.ifExists)
 
 		if test.ifMock {
-			mockTaskStore.EXPECT().UpdateTask(test.Tid).Return(test.exp, test.expErr)
+			mockTaskStore.EXPECT().UpdateTask(ctx, test.Tid).Return(test.exp, test.expErr)
 		}
 
-		op, err := svc.UpdateTask(test.Tid)
+		op, err := svc.UpdateTask(ctx, test.Tid)
 
 		if !errors.Is(test.expErr, err) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.expErr, err)
@@ -163,14 +172,16 @@ func TestDeleteTask(t *testing.T) {
 	mockUserService := NewMockUserService(ctrl)
 	svc := New(mockTaskStore, mockUserService)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
-		mockTaskStore.EXPECT().CheckIfExists(test.Tid).Return(test.ifExists)
+		mockTaskStore.EXPECT().CheckIfExists(ctx, test.Tid).Return(test.ifExists)
 
 		if test.ifMock {
-			mockTaskStore.EXPECT().DeleteTask(test.Tid).Return(test.exp, test.expErr)
+			mockTaskStore.EXPECT().DeleteTask(ctx, test.Tid).Return(test.exp, test.expErr)
 		}
 
-		op, err := svc.DeleteTask(test.Tid)
+		op, err := svc.DeleteTask(ctx, test.Tid)
 
 		if !errors.Is(test.expErr, err) {
 			t.Errorf("%v.AddTask(): expected %v, but got %v", test.desc, test.expErr, err)

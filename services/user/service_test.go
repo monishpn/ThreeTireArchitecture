@@ -4,6 +4,7 @@ import (
 	"awesomeProject/models"
 	"errors"
 	"go.uber.org/mock/gomock"
+	"gofr.dev/pkg/gofr"
 	"net/http"
 	"reflect"
 	"testing"
@@ -28,12 +29,14 @@ func TestAddUser(t *testing.T) {
 	mockStore := NewMockUserStore(ctrl)
 	svc := New(mockStore)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
 		if test.mockCall {
-			mockStore.EXPECT().AddUser(test.inp).Return(test.exp)
+			mockStore.EXPECT().AddUser(ctx, test.inp).Return(test.exp)
 		}
 
-		err := svc.AddUser(test.inp)
+		err := svc.AddUser(ctx, test.inp)
 
 		if !errors.Is(err, test.exp) {
 			t.Errorf("Error in Testing: %v, Expected : %v, got : %v", test.exp, nil, err)
@@ -69,14 +72,16 @@ func TestViewTask(t *testing.T) {
 	mockStore := NewMockUserStore(ctrl)
 	svc := New(mockStore)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
-		mockStore.EXPECT().CheckIfRowsExists().Return(test.ifRow)
+		mockStore.EXPECT().CheckIfRowsExists(ctx).Return(test.ifRow)
 
 		if test.mockCall {
-			mockStore.EXPECT().ViewUser().Return(test.exp, test.expErr)
+			mockStore.EXPECT().ViewUser(ctx).Return(test.exp, test.expErr)
 		}
 
-		op, err := svc.ViewTask()
+		op, err := svc.ViewTask(ctx)
 
 		if !errors.Is(err, test.expErr) {
 			t.Errorf("Error in Testing: %v, Expected : %v, got : %v", test.desc, test.expErr, err)
@@ -109,14 +114,16 @@ func TestGetUserId(t *testing.T) {
 	mockStore := NewMockUserStore(ctrl)
 	svc := New(mockStore)
 
+	ctx := &gofr.Context{}
+
 	for _, test := range testCases {
-		mockStore.EXPECT().CheckUserID(test.input).Return(test.ifUser)
+		mockStore.EXPECT().CheckUserID(ctx, test.input).Return(test.ifUser)
 
 		if test.mockCall {
-			mockStore.EXPECT().GetUserByID(test.input).Return(test.exp, test.expErr)
+			mockStore.EXPECT().GetUserByID(ctx, test.input).Return(test.exp, test.expErr)
 		}
 
-		op, err := svc.GetUserId(test.input)
+		op, err := svc.GetUserId(ctx, test.input)
 
 		if !errors.Is(err, test.expErr) {
 			t.Errorf("Error in Testing: %v, Expected : %v, got : %v", test.desc, test.expErr, err)

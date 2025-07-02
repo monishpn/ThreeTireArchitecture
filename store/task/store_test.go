@@ -1,209 +1,390 @@
 package task
 
 import (
-	"awesomeProject/models"
+	Models "awesomeProject/models"
+	"context"
 	"database/sql"
-	"github.com/DATA-DOG/go-sqlmock"
-	"reflect"
+	"github.com/stretchr/testify/assert"
+	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/container"
+	"net/http"
 	"testing"
 )
 
-func mockAllocation(t *testing.T) (*sql.DB, sqlmock.Sqlmock, error) {
-	t.Helper()
+func TestViewTask(t *testing.T) {
+	mockContainer, mock := container.NewMockContainer(t)
 
-	return sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
+	}
+
+	rows := mock.SQL.NewRows([]string{"id", "task", "completed", "uid"}).
+		AddRow(1, "Testing-1", false, 1).
+		AddRow(2, "Testing-2", false, 2)
+
+	tests := []struct {
+		name     string
+		Tid      int
+		mockfunc func()
+		expAns   []Models.Tasks
+		err      error
+	}{
+		{
+			name: "Successful GetByID task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from TASKS").
+					WillReturnRows(rows)
+
+			},
+			expAns: []Models.Tasks{
+				Models.Tasks{Tid: 1, Task: "Testing-1", Completed: false, UserID: 1},
+				Models.Tasks{Tid: 2, Task: "Testing-2", Completed: false, UserID: 2},
+			},
+			err: nil,
+		},
+		{
+			name: "Failed add task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from Tasks").
+					WithArgs(1).
+					WillReturnRows(rows)
+			},
+			expAns: []Models.Tasks{},
+			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans, err := svc.ViewTask(ctx)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
+	}
+
 }
 
 func TestAddTask(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-	defer db.Close()
+	mockContainer, mock := container.NewMockContainer(t)
 
-	mock.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?,?)").
-		WithArgs("Testing", false, 1).WillReturnResult(sqlmock.NewResult(1, 1))
-
-	svc := New(db)
-
-	err := svc.AddTask("Testing", 1)
-	if err != nil {
-		t.Errorf("Error while adding Task : %v", err)
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	err = mock.ExpectationsWereMet()
-	if err != nil {
-		t.Errorf("Error While checking ecpectation in AddTask : %v", err)
+	tests := []struct {
+		name     string
+		task     string
+		uid      int
+		mockfunc func()
+		err      error
+	}{
+		{
+			name: "Successful add task",
+			task: "Testing",
+			uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?,?)").
+					WithArgs("Testing", false, 1).
+					WillReturnResult(mock.SQL.NewResult(1, 1))
+			},
+			err: nil,
+		},
+		{
+			name: "Failed add task",
+			task: "Testing",
+			uid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?)").
+					WithArgs("Testing", false, 1).
+					WillReturnResult(mock.SQL.NewResult(1, 1))
+			},
+			err: Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			err := svc.AddTask(ctx, tt.task, tt.uid)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+		})
 	}
 
-	// Error Checks
-	mock.ExpectExec("Insert into TASKS (task,completed,uid) values (?,?)").WithArgs("testing").WillReturnResult(sqlmock.NewResult(0, 1))
-
-	err = svc.AddTask("Testing", 1)
-
-	if err == nil {
-		t.Errorf("Expected error but got none")
-	}
 }
 
-func TestViewTask(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-	defer db.Close()
+func TestGetByIDTask(t *testing.T) {
+	mockContainer, mock := container.NewMockContainer(t)
 
-	rows := sqlmock.NewRows([]string{"id", "task", "completed", "uid"}).
-		AddRow(1, "Task 1", false, 101).
-		AddRow(2, "Task 2", true, 102)
-
-	mock.ExpectQuery("select * from TASKS").
-		WillReturnRows(rows)
-
-	exptedTasks := []models.Tasks{
-		{1, "Task 1", false, 101},
-		{2, "Task 2", true, 102},
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	store := New(db)
-	tasks, err := store.ViewTask()
+	rows := mock.SQL.NewRows([]string{"id", "task", "completed", "uid"}).
+		AddRow(1, "Testing", false, 1)
 
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
+	tests := []struct {
+		name     string
+		Tid      int
+		mockfunc func()
+		expAns   Models.Tasks
+		err      error
+	}{
+		{
+			name: "Successful GetByID task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from TASKS where id=?").
+					WithArgs(1).
+					WillReturnRows(rows)
+
+			},
+			expAns: Models.Tasks{Tid: 1, Task: "Testing", UserID: 1},
+			err:    nil,
+		},
+		{
+			name: "Failed add task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from TASKS where id").
+					WithArgs(1).
+					WillReturnRows(rows)
+			},
+			expAns: Models.Tasks{},
+			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans, err := svc.GetByID(ctx, tt.Tid)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
 	}
 
-	if err != nil {
-		t.Errorf("Error while Checking Expectations in ViewTask : %v", err)
-	}
-
-	if !reflect.DeepEqual(exptedTasks, tasks) {
-		t.Errorf("Some error in the output")
-	}
-
-	// Error Check
-	mock.ExpectQuery("Select * from Tasks").WillReturnRows(rows)
-
-	_, err = store.ViewTask()
-
-	if err == nil {
-		t.Errorf("Expected error but got none")
-	}
-}
-
-func TestGetByID(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-	defer db.Close()
-
-	row := sqlmock.NewRows([]string{"id", "task", "completed", "uid"}).
-		AddRow(1, "Task 1", false, 101)
-
-	mock.ExpectQuery("select * from TASKS where id=?").
-		WithArgs(1).
-		WillReturnRows(row)
-
-	expected := models.Tasks{1, "Task 1", false, 101}
-	store := New(db)
-	tasks, err := store.GetByID(1)
-
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
-	}
-
-	if !reflect.DeepEqual(expected, tasks) {
-		t.Errorf("Some error in the output")
-	}
-
-	// error check
-	mock.ExpectQuery("select * from Task where uid").WillReturnRows(row)
-
-	_, err = store.GetByID(1)
-
-	if err == nil {
-		t.Errorf("Expected Error but got none")
-	}
 }
 
 func TestUpdateTask(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-	defer db.Close()
+	mockContainer, mock := container.NewMockContainer(t)
 
-	mock.ExpectExec("UPDATE TASKS SET completed= true WHERE id=?").
-		WithArgs(1).
-		WillReturnResult(sqlmock.NewResult(0, 1))
-
-	store := New(db)
-	ok, err := store.UpdateTask(1)
-
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	if !ok {
-		t.Errorf("Expected true, got false")
+	tests := []struct {
+		name     string
+		Tid      int
+		mockfunc func()
+		expAns   bool
+		err      error
+	}{
+		{
+			name: "Successful Update task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectExec("UPDATE TASKS SET completed= true WHERE id=?").
+					WithArgs(1).
+					WillReturnResult(mock.SQL.NewResult(0, 1))
+
+			},
+			expAns: true,
+			err:    nil,
+		},
+		{
+			name: "Failed Update task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectExec("UPDATE TASKS SET completed= true WHERE id").
+					WithArgs(1).
+					WillReturnResult(mock.SQL.NewResult(0, 1))
+			},
+			expAns: false,
+			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans, err := svc.UpdateTask(ctx, tt.Tid)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
 	}
 
-	// error check
-	mock.ExpectExec("UPDATE task SET completed= true WHERE id").
-		WithArgs(1).
-		WillReturnResult(sqlmock.NewResult(0, 1))
-
-	_, err = store.UpdateTask(1)
-	if err == nil {
-		t.Errorf("Expected error but got none")
-	}
 }
 
 func TestDeleteTask(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-	defer db.Close()
+	mockContainer, mock := container.NewMockContainer(t)
 
-	mock.ExpectExec("delete from TASKS where id=?").
-		WithArgs(1).
-		WillReturnResult(sqlmock.NewResult(0, 1))
-
-	store := New(db)
-	ok, err := store.DeleteTask(1)
-
-	if err != nil {
-		t.Errorf("Expected no error, got: %v", err)
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	if !ok {
-		t.Errorf("Expected true, got false")
+	tests := []struct {
+		name     string
+		Tid      int
+		mockfunc func()
+		expAns   bool
+		err      error
+	}{
+		{
+			name: "Successful Update task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectExec("delete from TASKS where id=?").
+					WithArgs(1).
+					WillReturnResult(mock.SQL.NewResult(0, 1))
+
+			},
+			expAns: true,
+			err:    nil,
+		},
+		{
+			name: "Failed Update task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectExec("delete from TASKS where id").
+					WithArgs(1).
+					WillReturnResult(mock.SQL.NewResult(0, 1))
+			},
+			expAns: false,
+			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans, err := svc.DeleteTask(ctx, tt.Tid)
+			if !assert.Equal(t, tt.err, err) {
+				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
+			}
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
 	}
 
-	// error check
-	mock.ExpectExec("delete from TASKS where id").
-		WithArgs(1).
-		WillReturnResult(sqlmock.NewResult(0, 1))
-
-	_, err = store.DeleteTask(1)
-
-	if err == nil {
-		t.Errorf("Expected error but got none")
-	}
 }
 
-func TestCheckIfExists(t *testing.T) {
-	db, mock, _ := mockAllocation(t)
-	defer db.Close()
+func TestCheckTask(t *testing.T) {
+	mockContainer, mock := container.NewMockContainer(t)
 
-	row := sqlmock.NewRows([]string{"id"}).AddRow(1)
-
-	mock.ExpectQuery("select id from TASKS where id=?").
-		WithArgs(1).
-		WillReturnRows(row)
-
-	store := New(db)
-	exists := store.CheckIfExists(1)
-
-	if !exists {
-		t.Errorf("Expected true, got false")
+	ctx := &gofr.Context{
+		Context:   context.Background(),
+		Request:   nil,
+		Container: mockContainer,
 	}
 
-	// Error check empty row
-	row = sqlmock.NewRows([]string{"id"})
+	rows := mock.SQL.NewRows([]string{"id"}).
+		AddRow(1)
 
-	mock.ExpectQuery("select id from TASKS where id=?").
-		WithArgs(1).
-		WillReturnRows(row)
+	tests := []struct {
+		name     string
+		Tid      int
+		mockfunc func()
+		expAns   bool
+	}{
+		{
+			name: "Successful Checking task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select id from TASKS where id=?").
+					WithArgs(1).
+					WillReturnRows(rows)
 
-	exists = store.CheckIfExists(1)
-	if exists {
-		t.Errorf("Expected false, got true")
+			},
+			expAns: true,
+		},
+		{
+			name: "Empty row - Checking task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select id from TASKS where id=?").
+					WithArgs(1).
+					WillReturnRows(rows)
+
+			},
+			expAns: false,
+		},
+		{
+			name: "Failed add task",
+			Tid:  1,
+			mockfunc: func() {
+				mock.SQL.ExpectQuery("select * from TASKS where id").
+					WithArgs(1).
+					WillReturnRows(rows)
+			},
+			expAns: false,
+		},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockfunc()
+
+			var db *sql.DB
+			svc := New(db)
+
+			ans := svc.CheckIfExists(ctx, tt.Tid)
+
+			if !assert.Equal(t, tt.expAns, ans) {
+				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+			}
+
+		})
+	}
+
 }

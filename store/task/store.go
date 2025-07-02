@@ -20,7 +20,7 @@ func New(db *sql.DB) *Store {
 func (s *Store) AddTask(ctx *gofr.Context, task string, uid int) error {
 	_, err := ctx.SQL.ExecContext(ctx, "Insert into TASKS (task,completed,uid) values (?,?,?)", task, false, uid)
 	if err != nil {
-		log.Printf("Error in Task/STORE.AddTask: %v", err)
+		//log.Printf("Error in Task/STORE.AddTask: %v", err)
 		return Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
 	}
 
@@ -38,7 +38,7 @@ func (s *Store) ViewTask(ctx *gofr.Context) ([]Models.Tasks, error) {
 
 	var answers []Models.Tasks
 
-	row, err := s.db.Query("select * from TASKS")
+	row, err := ctx.SQL.QueryContext(ctx, "select * from TASKS")
 	if err != nil {
 		log.Printf("Error in Task/STORE.View: %v", err)
 
@@ -83,7 +83,7 @@ func (s *Store) GetByID(ctx *gofr.Context, id int) (Models.Tasks, error) {
 func (s *Store) UpdateTask(ctx *gofr.Context, id int) (bool, error) {
 	_, err := ctx.SQL.ExecContext(ctx, "UPDATE TASKS SET completed= true WHERE id=?", id)
 	if err != nil {
-		log.Printf("Error in Task/STORE.UpdateTask: %v", err)
+		// log.Printf("Error in Task/STORE.UpdateTask: %v", err)
 		return false, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "}
 	}
 
@@ -93,7 +93,7 @@ func (s *Store) UpdateTask(ctx *gofr.Context, id int) (bool, error) {
 func (s *Store) DeleteTask(ctx *gofr.Context, id int) (bool, error) {
 	_, err := ctx.SQL.ExecContext(ctx, "delete from TASKS where id=?", id)
 	if err != nil {
-		log.Printf("Error in Task/STORE.DeleteTask: %v", err)
+		//log.Printf("Error in Task/STORE.DeleteTask: %v", err)
 		return false, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"}
 	}
 
@@ -109,7 +109,7 @@ func (s *Store) CheckIfExists(ctx *gofr.Context, i int) bool {
 			return false
 		}
 
-		log.Printf("Error in Task/STORE.CheckIfExists: %v", err)
+		//log.Printf("Error in Task/STORE.CheckIfExists: %v", err)
 
 		return false
 	}

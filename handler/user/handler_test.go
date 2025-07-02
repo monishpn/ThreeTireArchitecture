@@ -220,6 +220,7 @@ func TestGetByID(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodGet, "/task/{id}", http.NoBody)
 			req.Header.Set("Content-Type", "application/json")
+
 			req = mux.SetURLVars(req, map[string]string{ //working
 				"id": tt.requestBody,
 			})
