@@ -56,12 +56,11 @@ func (mr *MockTaskServiceMockRecorder) AddTask(ctx, task, uid any) *gomock.Call 
 }
 
 // DeleteTask mocks base method.
-func (m *MockTaskService) DeleteTask(ctx *gofr.Context, id int) (bool, error) {
+func (m *MockTaskService) DeleteTask(ctx *gofr.Context, id int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTask", ctx, id)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DeleteTask indicates an expected call of DeleteTask.
@@ -71,10 +70,10 @@ func (mr *MockTaskServiceMockRecorder) DeleteTask(ctx, id any) *gomock.Call {
 }
 
 // GetByID mocks base method.
-func (m *MockTaskService) GetByID(ctx *gofr.Context, id int) (models.Tasks, error) {
+func (m *MockTaskService) GetByID(ctx *gofr.Context, id int) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, id)
-	ret0, _ := ret[0].(models.Tasks)
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -86,12 +85,11 @@ func (mr *MockTaskServiceMockRecorder) GetByID(ctx, id any) *gomock.Call {
 }
 
 // UpdateTask mocks base method.
-func (m *MockTaskService) UpdateTask(ctx *gofr.Context, id int) (bool, error) {
+func (m *MockTaskService) UpdateTask(ctx *gofr.Context, id int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateTask", ctx, id)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdateTask indicates an expected call of UpdateTask.

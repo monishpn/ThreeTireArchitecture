@@ -28,7 +28,7 @@ func New(service TaskService) *Handler {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /task [post]
 func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
-	var reqBody models.AddTaskRequest
+	var reqBody models.Tasks
 
 	err := ctx.Bind(&reqBody)
 	if err != nil {
@@ -73,7 +73,7 @@ func (h *Handler) Viewtask(ctx *gofr.Context) (any, error) {
 func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
+		return nil, http.ErrorInvalidParam{Params: []string{"id"}}
 	}
 
 	ans, err := h.service.GetByID(ctx, id)
@@ -97,19 +97,15 @@ func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
+		return nil, http.ErrorInvalidParam{Params: []string{"id"}}
 	}
 
-	ans, err := h.service.UpdateTask(ctx, id)
+	err = h.service.UpdateTask(ctx, id)
 	if err != nil {
-		return nil, err
+		return "Task Not Updated", err
 	}
 
-	if ans {
-		return "Task updated", nil
-	}
-
-	return "Task Could Not be uploaded", nil
+	return "Task Updated", nil
 }
 
 // Deletetask godoc
@@ -125,16 +121,12 @@ func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
+		return nil, http.ErrorInvalidParam{Params: []string{"id"}}
 	}
 
-	ans, err := h.service.DeleteTask(ctx, id)
+	err = h.service.DeleteTask(ctx, id)
 	if err != nil {
 		return nil, err
-	}
-
-	if ans {
-		return nil, nil
 	}
 
 	return nil, nil

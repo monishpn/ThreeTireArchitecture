@@ -29,6 +29,7 @@ func TestAddTask(t *testing.T) {
 		Request:   nil,
 		Container: mockContainer,
 	}
+
 	tests := []struct {
 		name             string
 		taskIp           string
@@ -41,7 +42,7 @@ func TestAddTask(t *testing.T) {
 			name:        "Successful add task",
 			taskIp:      "Testing",
 			uidInput:    1,
-			requestBody: `{"task":"Testing","userID":1}`,
+			requestBody: `{"task":"Testing","uid":1}`,
 			expectedResponse: gofrResponse{
 				result: "Task added",
 				err:    nil,
@@ -55,7 +56,7 @@ func TestAddTask(t *testing.T) {
 			requestBody: `{"Testing","userID":1}`,
 			expectedResponse: gofrResponse{
 				result: nil,
-				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Give Correct Input"}},
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"body"}},
 			},
 			ifMock: false,
 		},
@@ -63,7 +64,7 @@ func TestAddTask(t *testing.T) {
 			name:        "Check With Error",
 			taskIp:      "Testing",
 			uidInput:    1,
-			requestBody: `{"task":"Testing","userID":1}`,
+			requestBody: `{"task":"Testing","uid":1}`,
 			expectedResponse: gofrResponse{
 				result: nil,
 				err:    errors.New("testing error"),
@@ -75,7 +76,9 @@ func TestAddTask(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockTaskService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodPost, "/task", strings.NewReader(tt.requestBody))
@@ -111,6 +114,7 @@ func TestViewTask(t *testing.T) {
 		Request:   nil,
 		Container: mockContainer,
 	}
+
 	tests := []struct {
 		name    string
 		expResp gofrResponse
@@ -141,7 +145,9 @@ func TestViewTask(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockTaskService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/task", http.NoBody)
@@ -177,6 +183,7 @@ func TestGetByID(t *testing.T) {
 		Request:   nil,
 		Container: mockContainer,
 	}
+
 	tests := []struct {
 		name        string
 		requestBody string
@@ -196,7 +203,7 @@ func TestGetByID(t *testing.T) {
 			name:        "Error GetByID task",
 			requestBody: "1",
 			expResp: gofrResponse{
-				result: models.Tasks{},
+				result: nil,
 				err:    errors.New("testing error"),
 			},
 			ifMock: true,
@@ -206,7 +213,7 @@ func TestGetByID(t *testing.T) {
 			requestBody: "r",
 			expResp: gofrResponse{
 				result: nil,
-				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}},
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"id"}},
 			},
 			ifMock: false,
 		},
@@ -215,16 +222,19 @@ func TestGetByID(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockTaskService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/task/{id}", http.NoBody)
 			req.Header.Set("Content-Type", "application/json")
+
 			req = mux.SetURLVars(req, map[string]string{ //working
 				"id": tt.requestBody,
 			})
 
-			//req.SetPathValue("id", tt.requestBody) // not working
+			// req.SetPathValue("id", tt.requestBody) // not working
 
 			request := gofrHttp.NewRequest(req)
 
@@ -268,7 +278,7 @@ func TestUpdate(t *testing.T) {
 			name:        "Successful Update task",
 			requestBody: "1",
 			expResp: gofrResponse{
-				result: "Task updated",
+				result: "Task Updated",
 				err:    nil,
 			},
 			ifMock: true,
@@ -277,7 +287,7 @@ func TestUpdate(t *testing.T) {
 			name:        "Error Update task",
 			requestBody: "1",
 			expResp: gofrResponse{
-				result: nil,
+				result: "Task Not Updated",
 				err:    errors.New("testing error"),
 			},
 			ifMock: true,
@@ -287,7 +297,7 @@ func TestUpdate(t *testing.T) {
 			requestBody: "r",
 			expResp: gofrResponse{
 				result: nil,
-				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}},
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"id"}},
 			},
 			ifMock: false,
 		},
@@ -296,16 +306,19 @@ func TestUpdate(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockTaskService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/task/{id}", http.NoBody)
 			req.Header.Set("Content-Type", "application/json")
+
 			req = mux.SetURLVars(req, map[string]string{ //working
 				"id": tt.requestBody,
 			})
 
-			//req.SetPathValue("id", tt.requestBody) // not working
+			// req.SetPathValue("id", tt.requestBody) // not working
 
 			request := gofrHttp.NewRequest(req)
 
@@ -314,7 +327,7 @@ func TestUpdate(t *testing.T) {
 			id, err := strconv.Atoi(tt.requestBody)
 
 			if tt.ifMock {
-				mockService.EXPECT().UpdateTask(ctx, id).Return(true, tt.expResp.err)
+				mockService.EXPECT().UpdateTask(ctx, id).Return(tt.expResp.err)
 			}
 
 			val, err := svc.Updatetask(ctx)
@@ -349,9 +362,12 @@ func TestDelete(t *testing.T) {
 		{
 			name:        "Successful Delete task",
 			requestBody: "1",
-			expResp:     gofrResponse{},
-			ifMock:      true,
-			ifResp:      false,
+			expResp: gofrResponse{
+				result: nil,
+				err:    nil,
+			},
+			ifMock: true,
+			ifResp: false,
 		},
 		{
 			name:        "Error Delete task",
@@ -368,7 +384,7 @@ func TestDelete(t *testing.T) {
 			requestBody: "r",
 			expResp: gofrResponse{
 				result: nil,
-				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}},
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"id"}},
 			},
 			ifMock: false,
 			ifResp: true,
@@ -378,16 +394,19 @@ func TestDelete(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockTaskService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/task/{id}", http.NoBody)
 			req.Header.Set("Content-Type", "application/json")
+
 			req = mux.SetURLVars(req, map[string]string{ //working
 				"id": tt.requestBody,
 			})
 
-			//req.SetPathValue("id", tt.requestBody) // not working
+			// req.SetPathValue("id", tt.requestBody) // not working
 
 			request := gofrHttp.NewRequest(req)
 
@@ -396,7 +415,7 @@ func TestDelete(t *testing.T) {
 			id, err := strconv.Atoi(tt.requestBody)
 
 			if tt.ifMock {
-				mockService.EXPECT().DeleteTask(ctx, id).Return(true, tt.expResp.err)
+				mockService.EXPECT().DeleteTask(ctx, id).Return(tt.expResp.err)
 			}
 
 			val, err := svc.Deletetask(ctx)

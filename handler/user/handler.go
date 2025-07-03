@@ -16,14 +16,14 @@ func New(service UserService) *handler {
 }
 
 func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
-	var reqBody models.Input
+	var reqBody models.User
 
 	err := ctx.Bind(&reqBody)
 	if err != nil {
 		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"body"}}
 	}
 
-	err = h.service.AddUser(ctx, reqBody.InputName)
+	err = h.service.AddUser(ctx, reqBody.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
 	ans, err := h.service.GetUserId(ctx, id)
 
 	if err != nil {
-		return models.User{}, err
+		return nil, err
 	}
 
 	return ans, nil

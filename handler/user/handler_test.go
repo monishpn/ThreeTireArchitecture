@@ -29,6 +29,7 @@ func TestAddUser(t *testing.T) {
 		Request:   nil,
 		Container: mockContainer,
 	}
+
 	tests := []struct {
 		name             string
 		user             string
@@ -52,7 +53,7 @@ func TestAddUser(t *testing.T) {
 			requestBody: `{"Tester"}`,
 			expectedResponse: gofrResponse{
 				result: nil,
-				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Give Correct Input"}},
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"body"}},
 			},
 			ifMock: false,
 		},
@@ -71,7 +72,9 @@ func TestAddUser(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockUserService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodPost, "/user", strings.NewReader(tt.requestBody))
@@ -107,6 +110,7 @@ func TestViewUser(t *testing.T) {
 		Request:   nil,
 		Container: mockContainer,
 	}
+
 	tests := []struct {
 		name    string
 		expResp gofrResponse
@@ -137,7 +141,9 @@ func TestViewUser(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockUserService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/user", http.NoBody)
@@ -173,6 +179,7 @@ func TestGetByID(t *testing.T) {
 		Request:   nil,
 		Container: mockContainer,
 	}
+
 	tests := []struct {
 		name        string
 		requestBody string
@@ -192,7 +199,7 @@ func TestGetByID(t *testing.T) {
 			name:        "Error GetByID task",
 			requestBody: "1",
 			expResp: gofrResponse{
-				result: models.User{},
+				result: nil,
 				err:    errors.New("testing error"),
 			},
 			ifMock: true,
@@ -202,7 +209,7 @@ func TestGetByID(t *testing.T) {
 			requestBody: "r",
 			expResp: gofrResponse{
 				result: nil,
-				err:    gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}},
+				err:    gofrHttp.ErrorInvalidParam{Params: []string{"id"}},
 			},
 			ifMock: false,
 		},
@@ -211,7 +218,9 @@ func TestGetByID(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+
 			mockService := NewMockUserService(ctrl)
+
 			svc := New(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/task/{id}", http.NoBody)
@@ -221,14 +230,13 @@ func TestGetByID(t *testing.T) {
 				"id": tt.requestBody,
 			})
 
-			//req.SetPathValue("id", tt.requestBody) // not working
+			// req.SetPathValue("id", tt.requestBody) // not working
 
 			request := gofrHttp.NewRequest(req)
 
 			ctx.Request = request
 
 			id, err := strconv.Atoi(tt.requestBody)
-
 			if tt.ifMock {
 				mockService.EXPECT().GetUserId(ctx, id).Return(tt.expResp.result, tt.expResp.err)
 			}
