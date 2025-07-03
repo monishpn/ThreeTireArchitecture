@@ -62,7 +62,7 @@ func (_ *Store) ViewTask(ctx *gofr.Context) ([]models.Tasks, error) {
 	return answers, nil
 }
 
-func (_ *Store) GetByID(ctx *gofr.Context, id int) (models.Tasks, error) {
+func (_ *Store) GetByID(ctx *gofr.Context, id int) (any, error) {
 	var tID int
 
 	var task string

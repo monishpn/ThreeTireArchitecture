@@ -4,11 +4,7 @@ import "fmt"
 
 type User struct {
 	UserID int
-	Name   string
-}
-
-type Input struct {
-	InputName string `json:"name"`
+	Name   string `json:"name"`
 }
 
 func (usr User) String() string {

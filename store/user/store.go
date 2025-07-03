@@ -28,7 +28,7 @@ func (s *Store) AddUser(ctx *gofr.Context, name string) error {
 	return nil
 }
 
-func (s *Store) GetUserByID(ctx *gofr.Context, id int) (models.User, error) {
+func (s *Store) GetUserByID(ctx *gofr.Context, id int) (any, error) {
 	var uid int
 
 	var name string
