@@ -32,12 +32,12 @@ func (s *Service) ViewTask(ctx *gofr.Context) (models.UserSlice, error) {
 	return models.UserSlice{}, models.CustomError{http.StatusNoContent, "No user Found"}
 }
 
-func (s Service) GetUserId(ctx *gofr.Context, id int) (models.User, error) {
+func (s Service) GetUserId(ctx *gofr.Context, id int) (any, error) {
 	if s.CheckUserID(ctx, id) {
 		return s.store.GetUserByID(ctx, id)
 	}
 
-	return models.User{}, models.CustomError{Code: http.StatusNotFound, Message: "user does not exists"}
+	return nil, models.CustomError{Code: http.StatusNotFound, Message: "user does not exists"}
 }
 
 func (s Service) CheckUserID(ctx *gofr.Context, id int) bool {

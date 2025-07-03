@@ -20,7 +20,7 @@ func New(store TaskStore, userService UserService) *Service {
 
 func (s *Service) AddTask(ctx *gofr.Context, task string, uid int) error {
 	if task == "" {
-		return models.CustomError{http.StatusBadRequest, "Task is Empty"}
+		return models.CustomError{Code: http.StatusBadRequest, Message: "Task is Empty"}
 	}
 
 	check := s.userService.CheckUserID(ctx, uid)
@@ -28,30 +28,30 @@ func (s *Service) AddTask(ctx *gofr.Context, task string, uid int) error {
 	if check {
 		return s.store.AddTask(ctx, task, uid)
 	}
-	return models.CustomError{http.StatusBadRequest, "No user found"}
+	return models.CustomError{Code: http.StatusBadRequest, Message: "No user found"}
 }
 
 func (s *Service) ViewTask(ctx *gofr.Context) ([]models.Tasks, error) {
 	return s.store.ViewTask(ctx)
 }
 
-func (s *Service) GetByID(ctx *gofr.Context, i int) (models.Tasks, error) {
+func (s *Service) GetByID(ctx *gofr.Context, i int) (any, error) {
 	if s.store.CheckIfExists(ctx, i) {
 		return s.store.GetByID(ctx, i)
 	}
-	return models.Tasks{}, models.CustomError{http.StatusBadRequest, "No task found"}
+	return nil, models.CustomError{Code: http.StatusBadRequest, Message: "No task found"}
 }
 
-func (s *Service) UpdateTask(ctx *gofr.Context, i int) (bool, error) {
+func (s *Service) UpdateTask(ctx *gofr.Context, i int) error {
 	if s.store.CheckIfExists(ctx, i) {
 		return s.store.UpdateTask(ctx, i)
 	}
-	return false, models.CustomError{http.StatusBadRequest, "No task found"}
+	return models.CustomError{Code: http.StatusBadRequest, Message: "No task found"}
 }
 
-func (s *Service) DeleteTask(ctx *gofr.Context, i int) (bool, error) {
+func (s *Service) DeleteTask(ctx *gofr.Context, i int) error {
 	if s.store.CheckIfExists(ctx, i) {
 		return s.store.DeleteTask(ctx, i)
 	}
-	return false, models.CustomError{http.StatusBadRequest, "No task found"}
+	return models.CustomError{Code: http.StatusBadRequest, Message: "No task found"}
 }

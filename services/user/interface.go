@@ -7,7 +7,7 @@ import (
 
 type UserStore interface {
 	AddUser(ctx *gofr.Context, name string) error
-	GetUserByID(ctx *gofr.Context, id int) (models.User, error)
+	GetUserByID(ctx *gofr.Context, id int) (any, error)
 	ViewUser(ctx *gofr.Context) ([]models.User, error)
 	CheckUserID(ctx *gofr.Context, id int) bool
 	CheckIfRowsExists(ctx *gofr.Context) bool

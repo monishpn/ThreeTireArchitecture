@@ -26,7 +26,9 @@ func TestAddUser(t *testing.T) {
 	}
 
 	ctrl := gomock.NewController(t)
+
 	mockStore := NewMockUserStore(ctrl)
+
 	svc := New(mockStore)
 
 	ctx := &gofr.Context{}
@@ -69,7 +71,9 @@ func TestViewTask(t *testing.T) {
 	}
 
 	ctrl := gomock.NewController(t)
+
 	mockStore := NewMockUserStore(ctrl)
+
 	svc := New(mockStore)
 
 	ctx := &gofr.Context{}
@@ -99,19 +103,21 @@ func TestGetUserId(t *testing.T) {
 		desc     string
 		ifUser   bool
 		input    int
-		exp      models.User
+		exp      any
 		expErr   error
 		mockCall bool
 	}{
 		{1, "Testing while user exists", true, 1, models.User{1, "Ram"}, nil, true},
-		{2, "Testing while user doesn't exists", false, 5, models.User{}, models.CustomError{
+		{2, "Testing while user doesn't exists", false, 5, nil, models.CustomError{
 			Code:    http.StatusNotFound,
 			Message: "user does not exists",
 		}, false},
 	}
 
 	ctrl := gomock.NewController(t)
+
 	mockStore := NewMockUserStore(ctrl)
+
 	svc := New(mockStore)
 
 	ctx := &gofr.Context{}

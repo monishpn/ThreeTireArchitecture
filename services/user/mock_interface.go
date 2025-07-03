@@ -84,10 +84,10 @@ func (mr *MockUserStoreMockRecorder) CheckUserID(ctx, id any) *gomock.Call {
 }
 
 // GetUserByID mocks base method.
-func (m *MockUserStore) GetUserByID(ctx *gofr.Context, id int) (models.User, error) {
+func (m *MockUserStore) GetUserByID(ctx *gofr.Context, id int) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
-	ret0, _ := ret[0].(models.User)
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
