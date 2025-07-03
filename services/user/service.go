@@ -5,14 +5,6 @@ import (
 	"net/http"
 )
 
-type UserStore interface {
-	AddUser(name string) error
-	GetUserByID(id int) (Model.User, error)
-	ViewUser() ([]Model.User, error)
-	CheckUserID(id int) bool
-	CheckIfRowsExists() bool
-}
-
 type Service struct {
 	store UserStore
 }
@@ -27,6 +19,7 @@ func (s *Service) AddUser(name string) error {
 	if name == "" {
 		return Model.CustomError{http.StatusBadRequest, "Empty String given as input"}
 	}
+
 	return s.store.AddUser(name)
 }
 
@@ -36,7 +29,6 @@ func (s *Service) ViewTask() (Model.UserSlice, error) {
 	}
 
 	return Model.UserSlice{}, Model.CustomError{http.StatusNoContent, "No user Found"}
-
 }
 
 func (s Service) GetUserId(id int) (Model.User, error) {
@@ -48,6 +40,5 @@ func (s Service) GetUserId(id int) (Model.User, error) {
 }
 
 func (s Service) CheckUserID(id int) bool {
-
 	return s.store.CheckUserID(id)
 }

@@ -5,19 +5,6 @@ import (
 	"net/http"
 )
 
-type TaskStore interface {
-	AddTask(task string, uid int) error
-	ViewTask() ([]Model.Tasks, error)
-	GetByID(id int) (Model.Tasks, error)
-	UpdateTask(id int) (bool, error)
-	DeleteTask(id int) (bool, error)
-	CheckIfExists(i int) bool
-}
-
-type UserService interface {
-	CheckUserID(id int) bool
-}
-
 type Service struct {
 	store       TaskStore
 	userService UserService
@@ -37,19 +24,17 @@ func (s *Service) AddTask(task string, uid int) error {
 
 	check := s.userService.CheckUserID(uid)
 
-	if check == true {
+	if check {
 		return s.store.AddTask(task, uid)
 	}
 	return Model.CustomError{http.StatusBadRequest, "No user found"}
 }
 
 func (s *Service) ViewTask() ([]Model.Tasks, error) {
-
 	return s.store.ViewTask()
 }
 
 func (s *Service) GetByID(i int) (Model.Tasks, error) {
-
 	if s.store.CheckIfExists(i) {
 		return s.store.GetByID(i)
 	}
