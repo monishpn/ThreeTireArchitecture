@@ -202,7 +202,6 @@ func TestUpdateTask(t *testing.T) {
 		name     string
 		Tid      int
 		mockfunc func()
-		expAns   bool
 		err      error
 	}{
 		{
@@ -213,8 +212,7 @@ func TestUpdateTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnResult(mock.SQL.NewResult(0, 1))
 			},
-			expAns: true,
-			err:    nil,
+			err: nil,
 		},
 		{
 			name: "Failed Update task",
@@ -224,10 +222,10 @@ func TestUpdateTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnResult(mock.SQL.NewResult(0, 1))
 			},
-			expAns: false,
-			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "},
+			err: models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
@@ -235,13 +233,9 @@ func TestUpdateTask(t *testing.T) {
 			var db *sql.DB
 			svc := New(db)
 
-			ans, err := svc.UpdateTask(ctx, tt.Tid)
+			err := svc.UpdateTask(ctx, tt.Tid)
 			if !assert.Equal(t, tt.err, err) {
 				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
-			}
-
-			if !assert.Equal(t, tt.expAns, ans) {
-				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
 		})
 	}
@@ -260,7 +254,6 @@ func TestDeleteTask(t *testing.T) {
 		name     string
 		Tid      int
 		mockfunc func()
-		expAns   bool
 		err      error
 	}{
 		{
@@ -271,8 +264,7 @@ func TestDeleteTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnResult(mock.SQL.NewResult(0, 1))
 			},
-			expAns: true,
-			err:    nil,
+			err: nil,
 		},
 		{
 			name: "Failed Update task",
@@ -282,8 +274,7 @@ func TestDeleteTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnResult(mock.SQL.NewResult(0, 1))
 			},
-			expAns: false,
-			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"},
+			err: models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"},
 		},
 	}
 	for _, tt := range tests {
@@ -293,13 +284,9 @@ func TestDeleteTask(t *testing.T) {
 			var db *sql.DB
 			svc := New(db)
 
-			ans, err := svc.DeleteTask(ctx, tt.Tid)
+			err := svc.DeleteTask(ctx, tt.Tid)
 			if !assert.Equal(t, tt.err, err) {
 				t.Errorf("%v :  error = %v, wantErr %v", tt.name, err, tt.err)
-			}
-
-			if !assert.Equal(t, tt.expAns, ans) {
-				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
 			}
 		})
 	}

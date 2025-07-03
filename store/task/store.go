@@ -80,24 +80,24 @@ func (_ *Store) GetByID(ctx *gofr.Context, id int) (models.Tasks, error) {
 	return models.Tasks{tID, task, completed, uid}, nil
 }
 
-func (s *Store) UpdateTask(ctx *gofr.Context, id int) (bool, error) {
+func (s *Store) UpdateTask(ctx *gofr.Context, id int) error {
 	_, err := ctx.SQL.ExecContext(ctx, "UPDATE TASKS SET completed= true WHERE id=?", id)
 	if err != nil {
 		log.Printf("Error in Task/STORE.UpdateTask: %v", err)
-		return false, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "}
+		return models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "}
 	}
 
-	return true, nil
+	return nil
 }
 
-func (s *Store) DeleteTask(ctx *gofr.Context, id int) (bool, error) {
+func (s *Store) DeleteTask(ctx *gofr.Context, id int) error {
 	_, err := ctx.SQL.ExecContext(ctx, "delete from TASKS where id=?", id)
 	if err != nil {
 		log.Printf("Error in Task/STORE.DeleteTask: %v", err)
-		return false, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"}
+		return models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"}
 	}
 
-	return true, nil
+	return nil
 }
 
 func (s *Store) CheckIfExists(ctx *gofr.Context, i int) bool {
