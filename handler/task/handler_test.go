@@ -31,16 +31,16 @@ func TestAddTask(t *testing.T) {
 	}
 	tests := []struct {
 		name             string
-		task             string
-		uID              int
+		taskIp           string
+		uidInput         int
 		requestBody      string
 		expectedResponse gofrResponse
 		ifMock           bool
 	}{
 		{
 			name:        "Successful add task",
-			task:        "Testing",
-			uID:         1,
+			taskIp:      "Testing",
+			uidInput:    1,
 			requestBody: `{"task":"Testing","userID":1}`,
 			expectedResponse: gofrResponse{
 				result: "Task added",
@@ -50,8 +50,8 @@ func TestAddTask(t *testing.T) {
 		},
 		{
 			name:        "Failed Binding",
-			task:        "Testing",
-			uID:         1,
+			taskIp:      "Testing",
+			uidInput:    1,
 			requestBody: `{"Testing","userID":1}`,
 			expectedResponse: gofrResponse{
 				result: nil,
@@ -61,8 +61,8 @@ func TestAddTask(t *testing.T) {
 		},
 		{
 			name:        "Check With Error",
-			task:        "Testing",
-			uID:         1,
+			taskIp:      "Testing",
+			uidInput:    1,
 			requestBody: `{"task":"Testing","userID":1}`,
 			expectedResponse: gofrResponse{
 				result: nil,
@@ -86,7 +86,7 @@ func TestAddTask(t *testing.T) {
 			ctx.Request = request
 
 			if tt.ifMock {
-				mockService.EXPECT().AddTask(ctx, tt.task, tt.uID).Return(tt.expectedResponse.err)
+				mockService.EXPECT().AddTask(ctx, tt.taskIp, tt.uidInput).Return(tt.expectedResponse.err)
 			}
 
 			val, err := svc.Addtask(ctx)

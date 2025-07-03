@@ -43,11 +43,7 @@ func main() {
 	taskStore := Tstore.New(db)
 	taskSvc := Tservice.New(taskStore, userSvc)
 	taskHandler := Thandler.New(taskSvc)
-
-	app.GET("/", func(ctx *gofr.Context) (any, error) {
-		return "Hello World!", nil
-	})
-
+	
 	app.GET("/task", taskHandler.Viewtask)
 	app.GET("/task/{id}", taskHandler.Gettask)
 	app.POST("/task", taskHandler.Addtask)

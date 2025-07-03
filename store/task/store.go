@@ -1,7 +1,7 @@
 package task
 
 import (
-	Models "awesomeProject/models"
+	models "awesomeProject/models"
 	"database/sql"
 	"gofr.dev/pkg/gofr"
 	"log"
@@ -21,13 +21,13 @@ func (s *Store) AddTask(ctx *gofr.Context, task string, uid int) error {
 	_, err := ctx.SQL.ExecContext(ctx, "Insert into TASKS (task,completed,uid) values (?,?,?)", task, false, uid)
 	if err != nil {
 		log.Printf("Error in Task/STORE.AddTask: %v", err)
-		return Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
+		return models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
 	}
 
 	return nil
 }
 
-func (_ *Store) ViewTask(ctx *gofr.Context) ([]Models.Tasks, error) {
+func (_ *Store) ViewTask(ctx *gofr.Context) ([]models.Tasks, error) {
 	var tID int
 
 	var task string
@@ -36,13 +36,13 @@ func (_ *Store) ViewTask(ctx *gofr.Context) ([]Models.Tasks, error) {
 
 	var uid int
 
-	var answers []Models.Tasks
+	var answers []models.Tasks
 
 	row, err := ctx.SQL.QueryContext(ctx, "select * from TASKS")
 	if err != nil {
 		log.Printf("Error in Task/STORE.View: %v", err)
 
-		return []Models.Tasks{}, Models.CustomError{
+		return []models.Tasks{}, models.CustomError{
 			Code:    http.StatusInternalServerError,
 			Message: "Error While retrieving the Data from the Database",
 		}
@@ -54,15 +54,15 @@ func (_ *Store) ViewTask(ctx *gofr.Context) ([]Models.Tasks, error) {
 		err := row.Scan(&tID, &task, &completed, &uid)
 		if err != nil {
 			log.Printf("Error in Task/STORE.View: %v", err)
-			return []Models.Tasks{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While reading the data in row "}
+			return []models.Tasks{}, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While reading the data in row "}
 		}
-		answers = append(answers, Models.Tasks{tID, task, completed, uid})
+		answers = append(answers, models.Tasks{tID, task, completed, uid})
 	}
 
 	return answers, nil
 }
 
-func (_ *Store) GetByID(ctx *gofr.Context, id int) (Models.Tasks, error) {
+func (_ *Store) GetByID(ctx *gofr.Context, id int) (models.Tasks, error) {
 	var tID int
 
 	var task string
@@ -74,17 +74,17 @@ func (_ *Store) GetByID(ctx *gofr.Context, id int) (Models.Tasks, error) {
 	err := ctx.SQL.QueryRowContext(ctx, "select * from TASKS where id=?", id).Scan(&tID, &task, &completed, &uid)
 	if err != nil {
 		log.Printf("Error in Task/STORE.GetByID: %v", err)
-		return Models.Tasks{},
-			Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
+		return models.Tasks{},
+			models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
 	}
-	return Models.Tasks{tID, task, completed, uid}, nil
+	return models.Tasks{tID, task, completed, uid}, nil
 }
 
 func (s *Store) UpdateTask(ctx *gofr.Context, id int) (bool, error) {
 	_, err := ctx.SQL.ExecContext(ctx, "UPDATE TASKS SET completed= true WHERE id=?", id)
 	if err != nil {
 		log.Printf("Error in Task/STORE.UpdateTask: %v", err)
-		return false, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "}
+		return false, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "}
 	}
 
 	return true, nil
@@ -94,7 +94,7 @@ func (s *Store) DeleteTask(ctx *gofr.Context, id int) (bool, error) {
 	_, err := ctx.SQL.ExecContext(ctx, "delete from TASKS where id=?", id)
 	if err != nil {
 		log.Printf("Error in Task/STORE.DeleteTask: %v", err)
-		return false, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"}
+		return false, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"}
 	}
 
 	return true, nil

@@ -1,7 +1,7 @@
 package user
 
 import (
-	Models "awesomeProject/models"
+	models "awesomeProject/models"
 	"database/sql"
 	"gofr.dev/pkg/gofr"
 	"log"
@@ -20,7 +20,7 @@ func (s *Store) AddUser(ctx *gofr.Context, name string) error {
 	_, err := ctx.SQL.ExecContext(ctx, "insert into USERS (name) values (?)", name)
 	if err != nil {
 		log.Println(err)
-		return Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
+		return models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"}
 	}
 
 	log.Printf("Added user %s", name)
@@ -28,7 +28,7 @@ func (s *Store) AddUser(ctx *gofr.Context, name string) error {
 	return nil
 }
 
-func (s *Store) GetUserByID(ctx *gofr.Context, id int) (Models.User, error) {
+func (s *Store) GetUserByID(ctx *gofr.Context, id int) (models.User, error) {
 	var uid int
 
 	var name string
@@ -36,19 +36,19 @@ func (s *Store) GetUserByID(ctx *gofr.Context, id int) (Models.User, error) {
 	err := ctx.SQL.QueryRowContext(ctx, "select * from USERS where uid=?", id).Scan(&uid, &name)
 	if err != nil {
 		log.Println(err)
-		return Models.User{},
-			Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
+		return models.User{},
+			models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
 	}
 
-	return Models.User{uid, name}, nil
+	return models.User{uid, name}, nil
 }
 
-func (s *Store) ViewUser(ctx *gofr.Context) ([]Models.User, error) {
-	var users []Models.User
+func (s *Store) ViewUser(ctx *gofr.Context) ([]models.User, error) {
+	var users []models.User
 	row, err := ctx.SQL.QueryContext(ctx, "Select * from USERS")
 
 	if err != nil {
-		return []Models.User{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
+		return []models.User{}, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"}
 	}
 
 	defer row.Close()
@@ -60,9 +60,9 @@ func (s *Store) ViewUser(ctx *gofr.Context) ([]Models.User, error) {
 	for row.Next() {
 		err = row.Scan(&uid, &name)
 		if err != nil {
-			return []Models.User{}, Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While reading the data in row "}
+			return []models.User{}, models.CustomError{Code: http.StatusInternalServerError, Message: "Error While reading the data in row "}
 		}
-		users = append(users, Models.User{uid, name})
+		users = append(users, models.User{uid, name})
 	}
 
 	return users, nil

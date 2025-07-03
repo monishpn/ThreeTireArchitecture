@@ -1,7 +1,7 @@
 package task
 
 import (
-	Models "awesomeProject/models"
+	"awesomeProject/models"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/http"
 	"strconv"
@@ -28,15 +28,14 @@ func New(service TaskService) *Handler {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /task [post]
 func (h *Handler) Addtask(ctx *gofr.Context) (any, error) {
-	var reqBody Models.AddTaskRequest
+	var reqBody models.AddTaskRequest
 
 	err := ctx.Bind(&reqBody)
 	if err != nil {
-		return nil, http.ErrorInvalidParam{Params: []string{"Give Correct Input"}}
+		return nil, http.ErrorInvalidParam{Params: []string{"body"}}
 	}
 
 	err = h.service.AddTask(ctx, reqBody.Task, reqBody.UserID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (h *Handler) Gettask(ctx *gofr.Context) (any, error) {
 
 	ans, err := h.service.GetByID(ctx, id)
 	if err != nil {
-		return Models.Tasks{}, err
+		return nil, err
 	}
 
 	return ans, nil
@@ -101,13 +100,16 @@ func (h *Handler) Updatetask(ctx *gofr.Context) (any, error) {
 		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
-	_, err = h.service.UpdateTask(ctx, id)
-
+	ans, err := h.service.UpdateTask(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return "Task updated", nil
+	if ans {
+		return "Task updated", nil
+	}
+
+	return "Task Could Not be uploaded", nil
 }
 
 // Deletetask godoc
@@ -126,11 +128,14 @@ func (h *Handler) Deletetask(ctx *gofr.Context) (any, error) {
 		return nil, http.ErrorInvalidParam{Params: []string{"Invalid Param"}}
 	}
 
-	_, err = h.service.DeleteTask(ctx, id)
-
+	ans, err := h.service.DeleteTask(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return "Task deleted", nil
+	if ans {
+		return nil, nil
+	}
+
+	return nil, nil
 }

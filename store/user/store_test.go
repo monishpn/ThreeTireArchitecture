@@ -1,7 +1,7 @@
 package user
 
 import (
-	Models "awesomeProject/models"
+	models "awesomeProject/models"
 	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"gofr.dev/pkg/gofr"
@@ -43,7 +43,7 @@ func TestAddUser(t *testing.T) {
 					WithArgs("Tester").
 					WillReturnResult(mock.SQL.NewResult(1, 1))
 			},
-			err: Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"},
+			err: models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"},
 		},
 	}
 	for _, tt := range tests {
@@ -77,7 +77,7 @@ func TestViewUser(t *testing.T) {
 	tests := []struct {
 		name     string
 		mockfunc func()
-		expAns   []Models.User
+		expAns   []models.User
 		err      error
 	}{
 		{
@@ -86,9 +86,9 @@ func TestViewUser(t *testing.T) {
 				mock.SQL.ExpectQuery("Select * from USERS").
 					WillReturnRows(rows)
 			},
-			expAns: []Models.User{
-				Models.User{UserID: 1, Name: "Tester-1"},
-				Models.User{UserID: 2, Name: "Tester-2"},
+			expAns: []models.User{
+				models.User{UserID: 1, Name: "Tester-1"},
+				models.User{UserID: 2, Name: "Tester-2"},
 			},
 			err: nil,
 		},
@@ -99,8 +99,8 @@ func TestViewUser(t *testing.T) {
 					WithArgs(1).
 					WillReturnRows(rows)
 			},
-			expAns: []Models.User{},
-			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+			expAns: []models.User{},
+			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
 		},
 	}
 	for _, tt := range tests {
@@ -138,7 +138,7 @@ func TestGetByIDUser(t *testing.T) {
 		name     string
 		UID      int
 		mockfunc func()
-		expAns   Models.User
+		expAns   models.User
 		err      error
 	}{
 		{
@@ -149,7 +149,7 @@ func TestGetByIDUser(t *testing.T) {
 					WithArgs(1).
 					WillReturnRows(rows)
 			},
-			expAns: Models.User{UserID: 1, Name: "Tester-1"},
+			expAns: models.User{UserID: 1, Name: "Tester-1"},
 			err:    nil,
 		},
 		{
@@ -160,8 +160,8 @@ func TestGetByIDUser(t *testing.T) {
 					WithArgs(1).
 					WillReturnRows(rows)
 			},
-			expAns: Models.User{},
-			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+			expAns: models.User{},
+			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
 		},
 	}
 	for _, tt := range tests {

@@ -1,7 +1,7 @@
 package task
 
 import (
-	Models "awesomeProject/models"
+	models "awesomeProject/models"
 	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"gofr.dev/pkg/gofr"
@@ -27,7 +27,7 @@ func TestViewTask(t *testing.T) {
 		name     string
 		Tid      int
 		mockfunc func()
-		expAns   []Models.Tasks
+		expAns   []models.Tasks
 		err      error
 	}{
 		{
@@ -37,9 +37,9 @@ func TestViewTask(t *testing.T) {
 				mock.SQL.ExpectQuery("select * from TASKS").
 					WillReturnRows(rows)
 			},
-			expAns: []Models.Tasks{
-				Models.Tasks{Tid: 1, Task: "Testing-1", Completed: false, UserID: 1},
-				Models.Tasks{Tid: 2, Task: "Testing-2", Completed: false, UserID: 2},
+			expAns: []models.Tasks{
+				models.Tasks{Tid: 1, Task: "Testing-1", Completed: false, UserID: 1},
+				models.Tasks{Tid: 2, Task: "Testing-2", Completed: false, UserID: 2},
 			},
 			err: nil,
 		},
@@ -51,8 +51,8 @@ func TestViewTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnRows(rows)
 			},
-			expAns: []Models.Tasks{},
-			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+			expAns: []models.Tasks{},
+			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
 		},
 	}
 	for _, tt := range tests {
@@ -110,7 +110,7 @@ func TestAddTask(t *testing.T) {
 					WithArgs("Testing", false, 1).
 					WillReturnResult(mock.SQL.NewResult(1, 1))
 			},
-			err: Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"},
+			err: models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Adding the Data to the Database"},
 		},
 	}
 	for _, tt := range tests {
@@ -144,7 +144,7 @@ func TestGetByIDTask(t *testing.T) {
 		name     string
 		Tid      int
 		mockfunc func()
-		expAns   Models.Tasks
+		expAns   models.Tasks
 		err      error
 	}{
 		{
@@ -155,7 +155,7 @@ func TestGetByIDTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnRows(rows)
 			},
-			expAns: Models.Tasks{Tid: 1, Task: "Testing", UserID: 1},
+			expAns: models.Tasks{Tid: 1, Task: "Testing", UserID: 1},
 			err:    nil,
 		},
 		{
@@ -166,8 +166,8 @@ func TestGetByIDTask(t *testing.T) {
 					WithArgs(1).
 					WillReturnRows(rows)
 			},
-			expAns: Models.Tasks{},
-			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
+			expAns: models.Tasks{},
+			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While retrieving the Data from the Database"},
 		},
 	}
 	for _, tt := range tests {
@@ -225,7 +225,7 @@ func TestUpdateTask(t *testing.T) {
 					WillReturnResult(mock.SQL.NewResult(0, 1))
 			},
 			expAns: false,
-			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "},
+			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While Updating the database "},
 		},
 	}
 	for _, tt := range tests {
@@ -283,7 +283,7 @@ func TestDeleteTask(t *testing.T) {
 					WillReturnResult(mock.SQL.NewResult(0, 1))
 			},
 			expAns: false,
-			err:    Models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"},
+			err:    models.CustomError{Code: http.StatusInternalServerError, Message: "Error While deleting data in Database"},
 		},
 	}
 	for _, tt := range tests {

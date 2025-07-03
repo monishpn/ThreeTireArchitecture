@@ -8,7 +8,7 @@ type User struct {
 }
 
 type Input struct {
-	T string `json:"name"`
+	InputName string `json:"name"`
 }
 
 func (usr User) String() string {

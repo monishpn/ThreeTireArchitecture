@@ -1,7 +1,7 @@
 package user
 
 import (
-	"awesomeProject/models"
+	models "awesomeProject/models"
 	"errors"
 	"go.uber.org/mock/gomock"
 	"gofr.dev/pkg/gofr"

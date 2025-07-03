@@ -1,7 +1,7 @@
 package user
 
 import (
-	Model "awesomeProject/models"
+	"awesomeProject/models"
 	"gofr.dev/pkg/gofr"
 	gofrHttp "gofr.dev/pkg/gofr/http"
 	"strconv"
@@ -16,14 +16,14 @@ func New(service UserService) *handler {
 }
 
 func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
-	var reqBody Model.Input
+	var reqBody models.Input
 
 	err := ctx.Bind(&reqBody)
 	if err != nil {
-		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"Give Correct Input"}}
+		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"body"}}
 	}
 
-	err = h.service.AddUser(ctx, reqBody.T)
+	err = h.service.AddUser(ctx, reqBody.InputName)
 	if err != nil {
 		return nil, err
 	}
@@ -34,13 +34,13 @@ func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
 func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
 	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"Invalid Param"}}
+		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"id"}}
 	}
 
 	ans, err := h.service.GetUserId(ctx, id)
 
 	if err != nil {
-		return Model.User{}, err
+		return models.User{}, err
 	}
 
 	return ans, nil
