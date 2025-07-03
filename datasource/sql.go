@@ -6,11 +6,11 @@ import (
 )
 
 func New(creds string) (*sql.DB, error) {
-
 	db, err := sql.Open("mysql", creds)
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.Ping()
 	if err != nil {
 		return nil, err
@@ -27,5 +27,4 @@ func New(creds string) (*sql.DB, error) {
 	}
 
 	return db, nil
-
 }

@@ -1,19 +1,11 @@
 package user
 
 import (
-	Model "awesomeProject/models"
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
+	"awesomeProject/models"
+	"gofr.dev/pkg/gofr"
+	gofrHttp "gofr.dev/pkg/gofr/http"
 	"strconv"
 )
-
-type UserService interface {
-	AddUser(name string) error
-	ViewTask() (Model.UserSlice, error)
-	GetUserId(id int) (Model.User, error)
-}
 
 type handler struct {
 	service UserService
@@ -23,83 +15,42 @@ func New(service UserService) *handler {
 	return &handler{service}
 }
 
-func (h *handler) AddUser(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+func (h *handler) AddUser(ctx *gofr.Context) (any, error) {
+	var reqBody models.User
 
-	msg, err := io.ReadAll(r.Body)
+	err := ctx.Bind(&reqBody)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		log.Printf("Error Reading Body: %s\n", err)
-		return
+		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"body"}}
 	}
 
-	var input struct {
-		T string `json:"name"`
-	}
-
-	err = json.Unmarshal(msg, &input)
+	err = h.service.AddUser(ctx, reqBody.Name)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		log.Printf("Error Parsing Body: %s\n", err)
-		return
+		return nil, err
 	}
 
-	err = h.service.AddUser(input.T)
-	if err != nil {
-		cErr, _ := err.(Model.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User Created"))
+	return "User Created", nil
 }
 
-func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-
-	defer r.Body.Close()
-	index, err := strconv.Atoi(r.PathValue("id"))
+func (h *handler) GetUserByID(ctx *gofr.Context) (any, error) {
+	id, err := strconv.Atoi(ctx.Request.PathParam("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
+		return nil, gofrHttp.ErrorInvalidParam{Params: []string{"id"}}
 	}
 
-	ans, err := h.service.GetUserId(index)
+	ans, err := h.service.GetUserId(ctx, id)
 
 	if err != nil {
-		cErr, _ := err.(Model.CustomError)
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
+		return nil, err
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(ans.String()))
-
+	return ans, nil
 }
 
-func (h *handler) Viewuser(w http.ResponseWriter, r *http.Request) {
-
-	ans, err := h.service.ViewTask()
+func (h *handler) Viewuser(ctx *gofr.Context) (any, error) {
+	ans, err := h.service.ViewTask(ctx)
 	if err != nil {
-		cErr, _ := err.(Model.CustomError)
-
-		w.WriteHeader(cErr.Code)
-		w.Write([]byte(cErr.Message))
-		return
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`Something went wrong!`))
-		return
-
+		return nil, err
 	}
 
-	b, _ := json.Marshal(ans)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	return ans, nil
 }
