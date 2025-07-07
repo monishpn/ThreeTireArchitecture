@@ -9,12 +9,11 @@ import (
 )
 
 type Store struct {
-	db *sql.DB
 }
 
 // New creates a new task store
-func New(db *sql.DB) *Store {
-	return &Store{db: db}
+func New() *Store {
+	return &Store{}
 }
 
 func (s *Store) AddTask(ctx *gofr.Context, task string, uid int) error {

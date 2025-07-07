@@ -16,7 +16,12 @@ func New(creds string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("CREATE Table IF NOT EXISTS TASKS ( id int auto_increment primary key, task text, completed bool, uid int);")
+	_, err = db.Exec(`CREATE Table IF NOT EXISTS TASKS ( 
+    							id int auto_increment primary key, 
+   							    task text, 
+    							completed bool, 
+    							uid int
+                             );`)
 	if err != nil {
 		return nil, err
 	}

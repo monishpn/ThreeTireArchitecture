@@ -2,7 +2,6 @@ package user
 
 import (
 	models "awesomeProject/models"
-	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/container"
@@ -50,8 +49,7 @@ func TestAddUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			err := svc.AddUser(ctx, tt.user)
 			if !assert.Equal(t, tt.err, err) {
@@ -107,8 +105,7 @@ func TestViewUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans, err := svc.ViewUser(ctx)
 			if !assert.Equal(t, tt.err, err) {
@@ -168,8 +165,7 @@ func TestGetByIDUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans, err := svc.GetUserByID(ctx, tt.UID)
 			if !assert.Equal(t, tt.err, err) {
@@ -242,8 +238,7 @@ func TestCheckIDUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans := svc.CheckUserID(ctx, tt.UID)
 
@@ -300,8 +295,7 @@ func TestCheckRowUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans := svc.CheckIfRowsExists(ctx)
 

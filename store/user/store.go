@@ -9,11 +9,10 @@ import (
 )
 
 type Store struct {
-	db *sql.DB
 }
 
-func New(db *sql.DB) *Store {
-	return &Store{db: db}
+func New() *Store {
+	return &Store{}
 }
 
 func (s *Store) AddUser(ctx *gofr.Context, name string) error {

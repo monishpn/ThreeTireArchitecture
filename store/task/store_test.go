@@ -2,7 +2,6 @@ package task
 
 import (
 	models "awesomeProject/models"
-	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/container"
@@ -59,8 +58,7 @@ func TestViewTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans, err := svc.ViewTask(ctx)
 			if !assert.Equal(t, tt.err, err) {
@@ -117,8 +115,7 @@ func TestAddTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			err := svc.AddTask(ctx, tt.task, tt.uid)
 			if !assert.Equal(t, tt.err, err) {
@@ -174,8 +171,7 @@ func TestGetByIDTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans, err := svc.GetByID(ctx, tt.Tid)
 			if !assert.Equal(t, tt.err, err) {
@@ -230,8 +226,7 @@ func TestUpdateTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			err := svc.UpdateTask(ctx, tt.Tid)
 			if !assert.Equal(t, tt.err, err) {
@@ -281,8 +276,7 @@ func TestDeleteTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			err := svc.DeleteTask(ctx, tt.Tid)
 			if !assert.Equal(t, tt.err, err) {
@@ -345,14 +339,12 @@ func TestCheckTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockfunc()
 
-			var db *sql.DB
-			svc := New(db)
+			svc := New()
 
 			ans := svc.CheckIfExists(ctx, tt.Tid)
 
-			if !assert.Equal(t, tt.expAns, ans) {
-				t.Errorf("%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
-			}
+			assert.Equal(t, tt.expAns, ans, "%v :  \nExpected = %v\n got = %v", tt.name, tt.expAns, ans)
+
 		})
 	}
 }
