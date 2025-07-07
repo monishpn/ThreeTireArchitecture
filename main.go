@@ -41,6 +41,9 @@ func main() {
 	taskSvc := Tservice.New(taskStore, userSvc)
 	taskHandler := Thandler.New(taskSvc)
 
+	app.GET("/health", func(ctx *gofr.Context) (any, error) {
+		return map[string]string{"status": "UP"}, nil
+	})
 	app.GET("/task", taskHandler.Viewtask)
 	app.GET("/task/{id}", taskHandler.Gettask)
 	app.POST("/task", taskHandler.Addtask)

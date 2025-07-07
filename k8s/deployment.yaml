@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: threelayerapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: threelayerapi
+  template:
+    metadata:
+      labels:
+        app: threelayerapi
+    spec:
+      containers:
+        - name: threelayerapi
+          image: threelayerapi:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: mysqldb
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              value: root123
+            - name: DB_NAME
+              value: test_db
+            - name: DB_DIALECT
+              value: mysql
